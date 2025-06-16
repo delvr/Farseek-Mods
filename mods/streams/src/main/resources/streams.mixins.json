@@ -1,0 +1,5 @@
+{
+  "package": "streams.mixins",
+  "mixins": ["BiomeMixins", "FluidMixins", "TreeFeatureMixins"],
+  "client": ["ClientExtensionsEventMixins"]
+}

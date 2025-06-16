@@ -1,0 +1,12 @@
+{
+  "values": [
+    "#minecraft:base_stone_overworld",
+    "#minecraft:terracotta",
+    "minecraft:sandstone",
+    "minecraft:red_sandstone",
+    "minecraft:infested_stone",
+    "minecraft:infested_deepslate",
+    "#c:ores_in_ground/stone",
+    "#c:ores_in_ground/deepslate"
+  ]
+}

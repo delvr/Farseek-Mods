@@ -1,0 +1,17 @@
+/**  <a href="https://docs.gradle.org/current/userguide/settings_file_basics.html">Gradle settings file</a>
+@see <a href="https://github.com/NeoForgeMDKs/MDK-1.21-ModDevGradle/blob/main/settings.gradle">settings.gradle MDK</a>
+*/
+
+/** <a href="https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_management">Plugin management</a> block */
+pluginManagement {
+    repositories { // https://docs.gradle.org/current/userguide/plugins.html#sec:custom_plugin_repositories
+        gradlePluginPortal()                                   // https://plugins.gradle.org/
+        maven { url = "https://maven.neoforged.net/releases" } // https://maven.neoforged.net/#/releases
+} }
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "latest.release"
+}
+
+/** <a href="https://docs.gradle.org/current/userguide/settings_file_basics.html#2_add_subprojects">Subprojects</a> */
+include("mods:farseek", "mods:repose", "mods:streams")

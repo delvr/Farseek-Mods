@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JsonSchemaMappingsProjectConfiguration">
+    <state>
+      <map>
+        <entry key="Minecraft Animated Texture">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="Minecraft Animated Texture" />
+              <option name="relativePathToSchema" value="https://json.schemastore.org/minecraft-texture-mcmeta.json" />
+              <option name="schemaVersion" value="JSON Schema 7" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="pattern" value="true" />
+                    <option name="path" value="**/assets/*/textures/**/*.png.mcmeta" />
+                    <option name="mappingKind" value="Pattern" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+        <entry key="Minecraft Language">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="Minecraft Language" />
+              <option name="relativePathToSchema" value="https://json.schemastore.org/minecraft-lang.json" />
+              <option name="schemaVersion" value="JSON Schema 7" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="pattern" value="true" />
+                    <option name="path" value="**/assets/*/lang/*.json" />
+                    <option name="mappingKind" value="Pattern" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+        <entry key="Minecraft Mixins">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="Minecraft Mixins" />
+              <option name="relativePathToSchema" value="https://json.schemastore.org/sponge-mixins.json" />
+              <option name="schemaVersion" value="JSON Schema 7" />
+              <option name="applicationDefined" value="true" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="pattern" value="true" />
+                    <option name="path" value="**/*mixins.json" />
+                    <option name="mappingKind" value="Pattern" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+        <entry key="Minecraft Tag">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="Minecraft Tag" />
+              <option name="relativePathToSchema" value="schemas/minecraft-tag.json" />
+              <option name="schemaVersion" value="JSON Schema 7" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="pattern" value="true" />
+                    <option name="path" value="**/data/*/tags/**/*.json" />
+                    <option name="mappingKind" value="Pattern" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+      </map>
+    </state>
+  </component>
+</project>

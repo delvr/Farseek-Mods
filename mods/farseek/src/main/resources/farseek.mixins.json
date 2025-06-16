@@ -1,0 +1,4 @@
+{
+  "package": "farseek.mixins",
+  "mixins": ["ChunkGeneratorMixins", "FeatureMixins", "StructureMixins"]
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaProjectSettings">
+    <option name="compilerHighlightingScala2" value="true" />
+    <option name="customScalatestSyntaxHighlighting" value="true" />
+    <option name="dontShowConversionDialog" value="true" />
+    <option name="groupPackageObjectWithPackage" value="true" />
+    <option name="includeBlockExpressions" value="true" />
+    <option name="includeLiterals" value="true" />
+    <option name="intInjectionMapping">
+      <map>
+        <entry key="xml" value="XML" />
+      </map>
+    </option>
+    <option name="projectViewHighlighting" value="true" />
+    <option name="scala3DisclaimerShown" value="true" />
+    <option name="scalaTestDefaultSuperClass" value="" />
+    <option name="searchAllSymbols" value="true" />
+    <option name="showArgumentsToByNameParams" value="true" />
+    <option name="showImplicitConversions" value="true" />
+    <option name="trailingCommasMode" value="Enabled" />
+    <option name="useCompilerRanges" value="false" />
+    <option name="useCompilerTypes" value="true" />
+  </component>
+</project>

@@ -1,0 +1,26 @@
+/** Common build script included by all mods *except* Farseek. */
+
+// https://github.com/NeoForged/ModDevGradle?tab=readme-ov-file#basic-usage-for-neoforge-mods
+neoForge {
+    mods {
+           thisMod { sourceSet         sourceSets.main }
+        farseekMod { sourceSet Farseek.sourceSets.main }
+    }
+    // https://github.com/NeoForged/ModDevGradle?tab=readme-ov-file#runs
+    afterEvaluate { runs {
+        client { client()
+            gameDirectory = mkdir "runClient"
+            dependencies { clientModulesOnly files(Farseek.scalaLibsJar.archiveFile) }
+        }
+        server { server()
+            gameDirectory = mkdir "runServer"
+            dependencies { serverModulesOnly files(Farseek.scalaLibsJar.archiveFile) }
+        }
+    }}
+}
+
+dependencies { implementation Farseek }
+
+shadowJar.configurations = []
+
+apply from: buildAnyMod

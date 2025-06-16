@@ -1,0 +1,5 @@
+/** <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Gradle Wrapper</a> configuration */
+wrapper {
+    gradleVersion = project.gradleVersion
+    distributionType = Wrapper.DistributionType.ALL
+}

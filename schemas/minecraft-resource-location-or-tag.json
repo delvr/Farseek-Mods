@@ -1,0 +1,7 @@
+{ "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id"  : "minecraft-resource-location-or-tag",
+  "title": "Minecraft resource location or tag",
+  "description": "https://minecraft.wiki/w/Tag#Resource_location",
+  "type": "string",
+  "pattern": "^#?[-a-z0-9_.]+:[-a-z0-9_./]+"
+}

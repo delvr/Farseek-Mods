@@ -1,0 +1,35 @@
+{ "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id"  : "minecraft-tag",
+  "title": "Minecraft Tag",
+  "description": "https://minecraft.wiki/w/Tag#JSON_format",
+  "$comment": "Supersedes https://json.schemastore.org/minecraft-tag.json",
+  "type": "object",
+  "required": ["values"],
+  "additionalProperties": false,
+  "properties": {
+    "replace": {
+      "description": "Whether or not the contents of this tag should completely replace tag contents from different lower priority data packs with the same resource location. When false, the tag's content is appended to the contents of the higher priority data packs instead. Defaults to false.",
+      "type": "boolean",
+      "default": false
+    },
+    "values": {
+      "description": "A list of mix and match of object names and tag names. For tags, recursive reference is possible, but a circular reference causes a loading failure.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "minecraft-resource-location-or-tag.json" },
+          { "type": "object",
+            "properties": {
+              "id": { "$ref": "minecraft-resource-location-or-tag.json" },
+              "required": {
+                "description": "Whether or not loading this tag should fail if this entry is not found, true by default (also for the string entries). A tag that fails to load can still be referenced in any data pack and be (re)defined in other data packs. In other words, only the entries in this JSON file are ignored if this entry cannot be found.",
+                "type": "boolean",
+                "default": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

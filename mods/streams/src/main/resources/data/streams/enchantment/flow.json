@@ -1,0 +1,10 @@
+{ // https://docs.neoforged.net/docs/resources/server/enchantments/#enchantment-json-format
+  "description": { "translate": "enchantment.streams.flow" },
+  "supported_items": [ "minecraft:water_bucket", "minecraft:lava_bucket" ],
+  "slots": [ "mainhand" ],
+  "weight": 1,
+  "max_level": 3,
+  "anvil_cost": 8,
+  "min_cost": { "base": 25, "per_level_above_first": 25 },
+  "max_cost": { "base": 75, "per_level_above_first": 25 }
+}

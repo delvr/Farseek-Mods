@@ -1,0 +1,4 @@
+{
+  "package": "repose.mixins",
+  "mixins": ["BlockStateMixins"]
+}

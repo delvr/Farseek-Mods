@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Minecraft" pattern="(lib:assets..*||lib:data..*||lib:net.minecraft..*||lib:net.neoforged..*)&amp;&amp;!lib:net.minecraft.data..*&amp;&amp;!lib:net.neoforged.neoforge.data..*&amp;&amp;!lib:assets.c.lang..*" />
+</component>

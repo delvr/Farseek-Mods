@@ -1,0 +1,17 @@
+*
+!.gitignore
+!codeStyles/
+!codeStyles/*
+!dictionaries/
+!dictionaries/*
+!inspectionProfiles/
+!inspectionProfiles/*
+!jsonSchemas.xml
+!scopes/
+!scopes/*
+!externalDependencies.xml
+!gradle.xml
+!scala_settings.xml
+!vcs.xml
+
+.DS_Store
