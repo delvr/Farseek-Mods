@@ -1,11 +1,7 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <option name="AUTODETECT_INDENTS" value="false" />
     <option name="RIGHT_MARGIN" value="100" />
-    <option name="DO_NOT_FORMAT">
-      <list>
-        <fileSet type="globPattern" pattern="**/*.*" />
-      </list>
-    </option>
     <GroovyCodeStyleSettings>
       <option name="USE_FLYING_GEESE_BRACES" value="true" />
       <option name="USE_SINGLE_CLASS_IMPORTS" value="false" />
@@ -56,6 +52,15 @@
       <option name="SPACES_AROUND_KEY_VALUE_DELIMITER" value="true" />
       <option name="KEEP_BLANK_LINES" value="true" />
     </Properties>
+    <ScalaCodeStyleSettings>
+      <option name="classCountToUseImportOnDemand" value="1" />
+      <option name="importLayout">
+        <array>
+          <option value="base package imports" />
+          <option value="all other imports" />
+        </array>
+      </option>
+    </ScalaCodeStyleSettings>
     <XML>
       <option name="XML_KEEP_BLANK_LINES" value="0" />
     </XML>
@@ -106,24 +111,20 @@
       <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="true" />
     </codeStyleSettings>
     <codeStyleSettings language="Scala">
-      <option name="KEEP_LINE_BREAKS" value="false" />
       <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="0" />
       <option name="KEEP_BLANK_LINES_IN_CODE" value="0" />
       <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="0" />
+      <option name="BLANK_LINES_AFTER_PACKAGE" value="0" />
+      <option name="BLANK_LINES_BEFORE_IMPORTS" value="0" />
       <option name="BLANK_LINES_AROUND_METHOD" value="0" />
       <option name="BLANK_LINES_AROUND_METHOD_IN_INTERFACE" value="0" />
       <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
       <option name="SPACE_BEFORE_IF_PARENTHESES" value="false" />
       <option name="SPACE_BEFORE_WHILE_PARENTHESES" value="false" />
       <option name="SPACE_BEFORE_FOR_PARENTHESES" value="false" />
-      <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="true" />
-      <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="true" />
       <option name="METHOD_ANNOTATION_WRAP" value="0" />
       <option name="CLASS_ANNOTATION_WRAP" value="0" />
       <option name="FIELD_ANNOTATION_WRAP" value="0" />
-      <indentOptions>
-        <option name="CONTINUATION_INDENT_SIZE" value="0" />
-      </indentOptions>
     </codeStyleSettings>
   </code_scheme>
 </component>

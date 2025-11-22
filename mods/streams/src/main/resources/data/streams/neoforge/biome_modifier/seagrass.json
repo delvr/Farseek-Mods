@@ -1,6 +1,0 @@
-{ //TODO use custom tag to group lands
-    "biomes"  : "#minecraft:has_structure/ruined_portal_standard",
-    "step"    : "vegetal_decoration",
-    "type"    : "neoforge:add_features",
-    "features": "streams:seagrass"
-}

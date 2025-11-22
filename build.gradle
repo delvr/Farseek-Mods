@@ -1,5 +1,156 @@
-/** <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Gradle Wrapper</a> configuration */
+/** <a href="https://docs.gradle.org/current/userguide/plugin_basics.html#applying_plugins">Plugins</a> */
+plugins {
+    id "scala" // https://docs.gradle.org/current/userguide/scala_plugin.html
+    alias libs.plugins.modDev // https://docs.neoforged.net/toolchain/docs/plugins/mdg/
+    alias libs.plugins.modPub // https://modmuss50.github.io/mod-publish-plugin/
+    alias libs.plugins.shadow // https://gradleup.com/shadow/
+}
+
+// -------------------------------------------------------------------------------------------------
+// Mod configurations
+// -------------------------------------------------------------------------------------------------
+String farseekId = "farseek"
+List<String> modIds = [farseekId] + csvProperty("modIds")
+// https://docs.groovy-lang.org/latest/html/gapi/groovy/util/ConfigSlurper.html
+def readConfig = { new ConfigSlurper().parse(file("configs/${it}.groovy").text) }
+List<ConfigObject> mods = modIds.collect { String modId ->
+    // https://docs.groovy-lang.org/latest/html/gapi/groovy/util/ConfigObject.html
+    ConfigObject mod = readConfig("common").merge(readConfig(modId))
+    mod.id = modId
+    mod.name = mod.id.capitalize()
+    mod.isFarseek = mod.id == farseekId
+    def modSourceSet = { mod.isFarseek? it: sourceSets.create(it.name + mod.name) { scala } }
+    mod.main = modSourceSet(sourceSets.main)
+    mod.test = modSourceSet(sourceSets.test)
+    mod.resources = mod.main.resources.srcDirs[0]
+    mod.generated = buildSubdir("generated/resources/" + mod.id)
+    mod.main.resources.srcDir mod.generated
+    mod.jarTaskName = tasks.shadowJar.name + mod.name
+    mod.titleWithVersion = "${mod.displayName} ${mod.version}"
+    mod
+}
+ext.farseek = mods[0]
+apply from: "build-mod.gradle"
+
+// -------------------------------------------------------------------------------------------------
+// Dependencies
+// -------------------------------------------------------------------------------------------------
+mods.forEach { ConfigObject mod ->
+    dependencies {
+        add(mod.test.implementationConfigurationName, mod.main.output)
+        if(!mod.isFarseek) {
+            add(mod.main.implementationConfigurationName, farseek.main.output)
+            add(mod.test.implementationConfigurationName, farseek.test.output)
+        }
+    }
+    setupExternalDependencies(mod)
+}
+
+// -------------------------------------------------------------------------------------------------
+// NeoForge
+// -------------------------------------------------------------------------------------------------
+/** <a href="https://github.com/neoforged/ModDevGradle?tab=readme-ov-file#basic-usage-for-neoforge-mods">NeoForge extension</a> */
+neoForge {
+    enable {
+        version = libs.versions.loader.get()
+        enabledSourceSets = mods.collectMany { [it.main, it.test] }
+    }
+    parchment.parchmentArtifact = libs.mappings.get().toString()
+    validateAccessTransformers = true
+}
+mods.forEach { ConfigObject mod -> setupNeoForge(mod) }
+
+// -------------------------------------------------------------------------------------------------
+// Compilation
+// -------------------------------------------------------------------------------------------------
+/** <a href="https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/scala/ScalaPluginExtension.html">Scala plugin extension</a> */
+scala {
+    scalaVersion = libs.versions.scala
+    zincVersion  = libs.versions.zinc
+}
+/** <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.scala.ScalaCompile.html">Scala compilation tasks</a> */
+tasks.withType(ScalaCompile).configureEach {
+    scalaCompileOptions.additionalParameters = (csvProperty("compilerOptions") +
+        csvProperty("languageFeatures").collect { "language:experimental.$it" }
+    ).collect { "-$it".toString() } // toString() avoids a casting bug in plugin
+}
+
+// -------------------------------------------------------------------------------------------------
+// Assembly
+// -------------------------------------------------------------------------------------------------
+tasks.jar { enabled = false; dependsOn tasks.shadowJar }
+tasks.shadowJar.enabled = false // our jar tasks are mod-specific
+mods.forEach { ConfigObject mod -> tasks.shadowJar.dependsOn jarTask(mod) }
+
+// -------------------------------------------------------------------------------------------------
+// Publishing
+// -------------------------------------------------------------------------------------------------
+gradle.startParameter.excludedTaskNames.add tasks.publishMods.name // prevent accidents
+project.version = 0 // just to satisfy mod-publish-plugin; real versions are mod-specific
+mods.forEach { ConfigObject mod -> setupPublishing(mod) }
+
+// -------------------------------------------------------------------------------------------------
+// Documentation
+// -------------------------------------------------------------------------------------------------
+tasks.build.dependsOn writeFileTask("writeReadme", "documentation", "README.md",
+    ["# " + project.title, project.description, ""] + mods.collectMany { readmeSection(it) }
+)
+
+// -------------------------------------------------------------------------------------------------
+// Gradle
+// -------------------------------------------------------------------------------------------------
+/** <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Wrapper</a> */
 wrapper {
-    gradleVersion = project.gradleVersion
+    gradleVersion = libs.versions.gradle.get()
     distributionType = Wrapper.DistributionType.ALL
+}
+// Re-categorize some tasks
+Map<String, String> taskGroups = [
+    "classes": "classes", "compile": "classes", "resources": "resources",
+    "preparekotlin": "build setup", "publications": "mod development/internal"
+]
+tasks.configureEach { task ->
+    taskGroups.forEach { substring, group ->
+        if(task.name.toLowerCase().contains(substring)) task.group = group
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// IntelliJ IDEA
+// -------------------------------------------------------------------------------------------------
+// https://www.jetbrains.com/help/idea/work-with-gradle-projects.html
+if(System.getProperty("idea.active")) {
+    clean { delete "out" } // clean IDEA's build directory along with Gradle's
+    apply plugin: "idea"   // https://docs.gradle.org/current/userguide/idea_plugin.html
+    // https://www.jetbrains.com/help/idea/working-with-module-dependencies.html#dependency-scope
+    // Map Gradle compileOnly configurations to IDEA Provided scope (via a resolvable sub-config)
+    mods.forEach { ConfigObject mod -> idea.module.scopes.PROVIDED.plus.add(
+        configurations.resolvable("provided" + mod.name) {
+            extendsFrom configurations.getByName(mod.main.compileOnlyConfigurationName)
+        }.get()
+    ) }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Utilities
+// -------------------------------------------------------------------------------------------------
+List<String> csvProperty(String key) { properties[key].split(",")*.trim() - "" }
+
+File buildSubdir(String subdir) { layout.buildDirectory.dir(subdir).get().asFile }
+
+TaskProvider writeFileTask(String taskName, String taskGroup, String fileName, List<String> lines) {
+    TaskProvider task = tasks.register(taskName, WriteFile) {
+        group = taskGroup
+        outputFile = file(fileName)
+        textLines = lines
+    }
+    // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#running-tasks-on-ide-project-synchronization
+    neoForge.ideSyncTask task
+    task
+}
+
+abstract class WriteFile extends DefaultTask {
+    @Input abstract ListProperty<String> getTextLines()
+    @OutputFile abstract RegularFileProperty getOutputFile()
+    @TaskAction void write() { outputFile.get().asFile.text = textLines.get().join("\n") + "\n" }
 }

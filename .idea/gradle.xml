@@ -10,10 +10,6 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/mods" />
-            <option value="$PROJECT_DIR$/mods/farseek" />
-            <option value="$PROJECT_DIR$/mods/repose" />
-            <option value="$PROJECT_DIR$/mods/streams" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="true" />

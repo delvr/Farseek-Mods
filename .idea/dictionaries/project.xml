@@ -1,7 +1,28 @@
 <component name="ProjectDictionaryState">
   <dictionary name="project">
     <words>
+      <w>accesstransformer</w>
+      <w>bézier</w>
+      <w>casteljau</w>
+      <w>componentwise</w>
+      <w>configurer</w>
+      <w>coord</w>
+      <w>curseforge</w>
+      <w>farseek</w>
       <w>foojay</w>
+      <w>lerp</w>
+      <w>levelgen</w>
+      <w>lnet</w>
+      <w>minecraft</w>
+      <w>modrinth</w>
+      <w>neoforge</w>
+      <w>overworld</w>
+      <w>strahler</w>
+      <w>subtrait</w>
+      <w>thalweg</w>
+      <w>toml</w>
+      <w>werror</w>
+      <w>worldgen</w>
     </words>
   </dictionary>
 </component>

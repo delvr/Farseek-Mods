@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Test Repose" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
-    <module name="Farseek-Mods.mods.repose.test" />
+    <module name="Farseek-Mods.testRepose" />
     <option name="VMParameters" value="" />
     <option name="allowRunningInParallel" value="false" />
     <option name="alternativeJrePath" />

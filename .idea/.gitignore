@@ -6,11 +6,12 @@
 !dictionaries/*
 !inspectionProfiles/
 !inspectionProfiles/*
-!jsonSchemas.xml
 !scopes/
 !scopes/*
+
 !externalDependencies.xml
 !gradle.xml
+!jsonSchemas.xml
 !scala_settings.xml
 !vcs.xml
 

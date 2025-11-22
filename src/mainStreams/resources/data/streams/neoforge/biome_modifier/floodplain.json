@@ -1,0 +1,6 @@
+{
+    "biomes"  : "#c:is_desert",
+    "step"    : "vegetal_decoration",
+    "type"    : "neoforge:add_features",
+    "features": ["streams:floodplain_trees", "streams:floodplain_grass"]
+}

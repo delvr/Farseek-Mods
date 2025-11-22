@@ -1,0 +1,18 @@
+# https://docs.gradle.org/current/userguide/version_catalogs.html
+[versions]
+gradle = "9.2.1"         # https://gradle.org/releases/
+loader = "21.10.52-beta" # https://neoforged.net/changelog/
+scala  = "3.7.4"         # https://github.com/scala/scala3/releases
+zinc   = "1.11.0"        # https://github.com/sbt/zinc/releases
+
+[libraries]
+# https://parchmentmc.org/docs/getting-started
+mappings = "org.parchmentmc.data:parchment-1.21.10:2025.10.12@zip"
+
+[plugins]
+# https://github.com/neoforged/ModDevGradle
+modDev = "net.neoforged.moddev:latest.release"
+# https://github.com/GradleUp/shadow
+shadow = "com.gradleup.shadow:latest.release"
+# https://github.com/modmuss50/mod-publish-plugin
+modPub = "me.modmuss50.mod-publish-plugin:latest.release"

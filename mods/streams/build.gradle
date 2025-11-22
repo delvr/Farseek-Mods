@@ -1,7 +1,0 @@
-plugins {
-    id "scala" // https://docs.gradle.org/current/userguide/scala_plugin.html
-    id "com.gradleup.shadow"             version "$shadowVersion" // https://github.com/GradleUp/shadow
-    id "net.neoforged.moddev"            version "$modDevVersion" // https://github.com/neoforged/ModDevGradle
-    id "me.modmuss50.mod-publish-plugin" version "$modPubVersion" // https://github.com/modmuss50/mod-publish-plugin
-}
-apply from: buildAppMod

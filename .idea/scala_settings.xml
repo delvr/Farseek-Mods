@@ -20,6 +20,5 @@
     <option name="showImplicitConversions" value="true" />
     <option name="trailingCommasMode" value="Enabled" />
     <option name="useCompilerRanges" value="false" />
-    <option name="useCompilerTypes" value="true" />
   </component>
 </project>

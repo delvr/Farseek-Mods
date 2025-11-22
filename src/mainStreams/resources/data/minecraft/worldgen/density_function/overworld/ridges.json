@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:max",
+    "argument1" : 0.25,
+    "argument2" : {
+      "type"    : "minecraft:shifted_noise",
+      "noise"   : "minecraft:ridge",
+      "shift_x" : "minecraft:shift_x",
+      "shift_z" : "minecraft:shift_z",
+      "shift_y" : 0.0,
+      "xz_scale": 0.25,
+      "y_scale" : 0.0
+    }
+  }
+}
