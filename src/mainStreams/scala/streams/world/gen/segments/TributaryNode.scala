@@ -8,7 +8,7 @@ import farseek.util.{*, given}
 
 val MinFallHeight: PositiveInt = `3`
 
-sealed abstract class TributaryNode(basin: TributaryBasin, chunkPos: ChunkXZ)(using NoiseState)
+sealed abstract class TributaryNode(basin: TributaryBasin)(using NoiseState)
     extends Segment, ChunkSegment, UpstreamSegment:
   override lazy val generator = basin.generator
   override protected def basinPos = basin.basinPos
@@ -38,7 +38,7 @@ sealed abstract class TributaryNode(basin: TributaryBasin, chunkPos: ChunkXZ)(us
 end TributaryNode
 
 final case class TributaryOutletNode(basin: TributaryBasin, chunkPos: ChunkXZ)(using NoiseState)
-    extends TributaryNode(basin, chunkPos):
+    extends TributaryNode(basin):
   override lazy val downstreamSide: XZSide = basin.downstreamSide
 
   override protected lazy val maxSurfaceLevelFromUpstream: BlockY = generator.minSurfaceLevel
@@ -48,7 +48,7 @@ final case class TributaryOutletNode(basin: TributaryBasin, chunkPos: ChunkXZ)(u
 end TributaryOutletNode
 
 final case class TributaryUpstreamNode(basin: TributaryBasin, chunkPos: ChunkXZ, maxSurfaceLevelFromSelf: BlockY,
-    downstreamSide: XZSide)(using NoiseState) extends TributaryNode(basin, chunkPos):
+    downstreamSide: XZSide)(using NoiseState) extends TributaryNode(basin):
 
   override lazy val maxDepth: PositiveInt = generator.maxTributaryDepth
 

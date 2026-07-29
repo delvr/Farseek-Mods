@@ -40,5 +40,5 @@ infix type IntoOptionWithMinMax[A, B] = MinMaxConversion[A, B]
 
 /** A [[https://en.wikipedia.org/wiki/Refinement_type refinement type]] for
 * [[https://docs.scala-lang.org/scala3/reference/other-new-features/opaques.html opaque type aliases]]. */
-class Refinement[T](validation: T => Boolean, mustBe: String)
-    extends PartialConversion[T, T](validation, identity, mustBe)
+class Refinement[T](validation: T => Boolean, _mustBe: String)
+    extends PartialConversion[T, T](validation, identity, _mustBe)

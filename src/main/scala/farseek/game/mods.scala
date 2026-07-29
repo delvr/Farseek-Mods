@@ -2,13 +2,13 @@ package farseek.game
 
 import farseek.game.imports.*
 import farseek.util.imports.*
-import net.minecraft.resources.ResourceLocation.*
+import net.minecraft.resources.Identifier.*
 import net.neoforged.neoforge.registries.*
 
 trait ModCompanion:
   def Id: String
 
-  def resource(path: String): ResourceLocation = fromNamespaceAndPath(Id, path)
+  def resource(path: String): Identifier = fromNamespaceAndPath(Id, path)
 
   def tag[T](registryKey: RegistryKey[T], path: String): TagKey[T] = registryKey.tag(Id, path)
 

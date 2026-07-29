@@ -1,0 +1,80 @@
+// https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html#sec:using_buildsrc
+
+// https://docs.gradle.org/current/userguide/filtering_repository_content.html#maven_repository_filtering
+repositories { mavenCentral() { mavenContent { releasesOnly() } } }
+
+// https://github.com/lightbend/config
+dependencies { implementation "com.typesafe:config:latest.release" }
+
+// https://docs.groovy-lang.org/next/html/documentation/core-metaprogramming.html#metaprogramming_emc
+// https://docs.groovy-lang.org/latest/html/api/groovy/lang/ExpandoMetaClass.html
+Object.metaClass {
+    getClassName  << { delegate.class.simpleName }
+    ifNonEmpty    << { f -> delegate? f(delegate): delegate }
+    validate      << { p = {it} -> p(delegate)? delegate: error("invalid $delegate") }
+    validatePart  << { desc, part, p = {it} -> p(part)? delegate: delegate.invalidPart(desc, part) }
+    validatedPart << { desc, part, p = {it} -> p(part)?     part: delegate.invalidPart(desc, part) }
+    invalidPart   << { desc, part -> error("invalid $desc `$part` in $delegate") }
+    missingPart   << { desc, part -> error("missing $desc `$part` in $delegate") }
+}
+String.metaClass {
+    asFile   << { new File(delegate) }
+    asUri    << { new  URI(delegate) }
+    div      << { [delegate, it].joinPaths() }
+    asCsvSeq << { delegate.splitAndTrim(",") }
+    asCsvMap << { delegate.asCsvSeq().collectEntries { it.splitOnFirst(":") } }
+    splitAndTrim  << { regex, limit = 0 -> delegate.split(regex, limit)*.trim() - "" }
+    splitOnFirst  << { regex -> delegate.splitAndTrim(regex, 2) }
+    trimPath << { delegate.endsWith("/") && !delegate.endsWith("://") &&
+                  delegate != "/" ? delegate.dropRight(1): delegate }
+}
+File.metaClass {
+    div << { ("$delegate"/it).asFile() }
+}
+URI.metaClass {
+    div << { ("$delegate"/it).asUri() }
+}
+Iterable.metaClass {
+    nonNulls       << { delegate.findAll { it != null } }
+    nonEmpties     << { delegate.findAll() }
+    nonBlanks      << { delegate.nonEmpties().collect { it.toString().trim() }.nonEmpties() }
+    joinNonNulls   << { s = "" -> delegate.nonNulls  ().join(s) }
+    joinNonEmpties << { s = "" -> delegate.nonEmpties().join(s) }
+    joinNonBlanks  << { s = "" -> delegate.nonBlanks ().join(s) }
+    joinWords      << { delegate.joinNonBlanks(" ") }
+    joinWordList   << { delegate.joinNonBlanks(", ") }
+    joinDashed     << { delegate.joinNonBlanks("-") }
+    joinDotted     << { delegate.joinNonBlanks(".") }
+    joinWithColons << { delegate.joinNonBlanks(":") }
+    joinLines      << { delegate.joinNonNulls("\n") }
+    joinParagraphs << { delegate.joinNonBlanks("\n\n") }
+    joinPaths      << { delegate.nonBlanks()*.trimPath().join("/") }
+    notMatching    << { p -> delegate.findAll { !p(it) } }
+    keyedWith      << { f -> delegate.collectEntries { [f(it), it] } }
+    mappedTo       << { f -> delegate.collectEntries { [it, f(it)] } }
+    byName         << { f = {it} -> delegate.collect(f).keyedWith { it.name } }
+    named          << { n -> delegate.find { it.name == n } }
+
+}
+Map.metaClass {
+    required  << { k    -> delegate.containsKey(k)? delegate[k]: delegate.missingPart("key", k) }
+    validated << { k, p -> delegate.validatedPart("value for key `$k`: ", delegate.required(k),  p) }
+    mapKeys   << { f -> delegate.collectEntries { k, v -> [f(k), v] } }
+    mapValues << { f -> delegate.collectEntries { k, v -> [k, f(v)] } }
+    withNames << { f -> delegate.collectEntries { k, v -> [k, f(v + [name: k])] } }
+    findByKey   << { p -> delegate.find { p(it.key)   } }
+    findByValue << { p -> delegate.find { p(it.value) } }
+    filterByKey     << { p  = {it} -> delegate.findAll { p(it.key)   } }
+    filterByValue   << { p  = {it} -> delegate.findAll { p(it.value) } }
+    validateKeys    << { p  = {it} -> validateMapPart(delegate, "keys",   delegate.keySet(), p) }
+    validateValues  << { p  = {it} -> validateMapPart(delegate, "values", delegate.values(), p) }
+    validateEntries << { pk = {it}, pv = {it} ->
+        validateMapPart(delegate, "entries", delegate.entrySet()) { pk(it.key) && pv(it.value) }
+    }
+}
+
+private Map validateMapPart(Map map, String partDesc, Iterable part, Closure p = {it}) {
+   part.notMatching(p).ifNonEmpty { map.invalidPart(partDesc, it) }; map
+}
+
+private def error(String msg) { throw new RuntimeException(msg) }

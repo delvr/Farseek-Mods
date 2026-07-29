@@ -5,9 +5,6 @@ import farseek.game.{*, given}
 import farseek.util.imports.*
 import farseek.util.{*, given}
 import net.minecraft.core.Direction.Axis.*
-import net.minecraft.world.entity.ambient.*
-import net.minecraft.world.entity.animal.*
-import net.minecraft.world.entity.monster.*
 import net.minecraft.world.phys.shapes.Shapes.*
 import repose.ReposeMod.*
 
@@ -37,9 +34,6 @@ extension(p: into[BlockXYZ])(using BlockGetter)
       else (baseShape \ EdgeCuts.filterByKey(cuts.contains).values.assumedNonEmpty.reduce(_ | _)).optimize
 end extension
 
-extension(entity: Entity) def canUseSlopes: Boolean = entity match
-  case _: WaterAnimal | _: FlyingAnimal | _: AmbientCreature |
-       _: Ghast | _: HappyGhast | _: Phantom => false
-  case _: LivingEntity => !entity.isNoGravity && !entity.isSteppingCarefully &&
-                           entity.moveDist > 0 && entity.maxUpStep >= StepHeight
-  case _ => false
+extension(entity: Entity) def canUseSlopes: Boolean =
+  !(entity.isAquatic || entity.isAerial || entity.isNoGravity || entity.isSteppingCarefully) &&
+    entity.moveDist > 0 && entity.maxUpStep >= StepHeight

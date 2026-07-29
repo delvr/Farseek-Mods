@@ -28,7 +28,7 @@ trait EventWithResponse[R] extends Event:
   var response: Option[R] = None
   def respond(r: R): Unit = response = Some(r)
 
-// https://docs.neoforged.net/docs/items/interactionpipeline/#result-types
+// https://docs.neoforged.net/docs/items/interactions/#interactionresult
 @sam trait InteractionEvent[-E <: ICancellableEvent] extends ((E, InteractionResult) => Unit):
   extension(event: E)
     def succeed(): Unit = cancelWith(SUCCESS)

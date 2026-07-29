@@ -1,119 +1,212 @@
 /** <a href="https://docs.gradle.org/current/userguide/plugin_basics.html#applying_plugins">Plugins</a> */
 plugins {
     id "scala" // https://docs.gradle.org/current/userguide/scala_plugin.html
-    alias libs.plugins.modDev // https://docs.neoforged.net/toolchain/docs/plugins/mdg/
-    alias libs.plugins.modPub // https://modmuss50.github.io/mod-publish-plugin/
-    alias libs.plugins.shadow // https://gradleup.com/shadow/
+    id "net.neoforged.moddev" version "latest.release" // https://github.com/neoforged/ModDevGradle
 }
 
-// -------------------------------------------------------------------------------------------------
-// Mod configurations
-// -------------------------------------------------------------------------------------------------
-String farseekId = "farseek"
-List<String> modIds = [farseekId] + csvProperty("modIds")
-// https://docs.groovy-lang.org/latest/html/gapi/groovy/util/ConfigSlurper.html
-def readConfig = { new ConfigSlurper().parse(file("configs/${it}.groovy").text) }
-List<ConfigObject> mods = modIds.collect { String modId ->
-    // https://docs.groovy-lang.org/latest/html/gapi/groovy/util/ConfigObject.html
-    ConfigObject mod = readConfig("common").merge(readConfig(modId))
-    mod.id = modId
-    mod.name = mod.id.capitalize()
-    mod.isFarseek = mod.id == farseekId
-    def modSourceSet = { mod.isFarseek? it: sourceSets.create(it.name + mod.name) { scala } }
-    mod.main = modSourceSet(sourceSets.main)
-    mod.test = modSourceSet(sourceSets.test)
-    mod.resources = mod.main.resources.srcDirs[0]
-    mod.generated = buildSubdir("generated/resources/" + mod.id)
-    mod.main.resources.srcDir mod.generated
-    mod.jarTaskName = tasks.shadowJar.name + mod.name
-    mod.titleWithVersion = "${mod.displayName} ${mod.version}"
-    mod
-}
-ext.farseek = mods[0]
-apply from: "build-mod.gradle"
+import com.typesafe.config.*
+import farseek.resources.*
+import farseek.tasks.*
+import net.neoforged.moddevgradle.tasks.*
+import static farseek.resources.Dependency.Type.*
+import static farseek.utils.Constants.*
+import static farseek.utils.Utilities.*
+import static groovy.json.JsonOutput.*
 
 // -------------------------------------------------------------------------------------------------
-// Dependencies
+// Resources configuration
 // -------------------------------------------------------------------------------------------------
-mods.forEach { ConfigObject mod ->
-    dependencies {
-        add(mod.test.implementationConfigurationName, mod.main.output)
-        if(!mod.isFarseek) {
-            add(mod.main.implementationConfigurationName, farseek.main.output)
-            add(mod.test.implementationConfigurationName, farseek.test.output)
-        }
-    }
-    setupExternalDependencies(mod)
+
+// https://github.com/lightbend/config/blob/main/HOCON.md#conventional-configuration-files-for-jvm-apps
+// Reads from buildSrc/src/main/resources/application.conf as well as system properties (-Dxyz)
+Map configs = ConfigFactory.load().root().unwrapped()
+// Badges
+Map<String, Map<String, String>> badges = configs.badges
+// Project
+Resource repository = new Resource(configs.project, badges)
+// Mod authors
+Map<String, Resource> authors = configs.authors.withNames { new Resource(it, badges) }
+// Mod-hosting platforms
+Map<String, Platform> platforms = configs.platforms.withNames { new Platform(it, badges) }
+// Mod dependencies
+Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map props ->
+    Dependency tmpDep = new Dependency(null, props, badges, platforms)
+    String version = configs.mods[tmpDep.name] && !configs.publish? null: versionFromRange(tmpDep)
+    new Dependency(version, props, badges, platforms)
 }
+// Local mods
+Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
+    String version = configs.publish?.get(props.name)?.version
+    new LocalMod(version, props, badges, platforms, modDependencies, sourceSets)
+}
+Map<String, LocalMod> modsToBuild = localMods.filterByValue { !it.skipBuild }
+List<LocalMod> appMods = modsToBuild.values().toList() - modsToBuild.farseek
+List<LocalMod> mods = (modsToBuild.farseek? [modsToBuild.farseek]: []) + appMods
 
 // -------------------------------------------------------------------------------------------------
-// NeoForge
+// Minecraft compilation
 // -------------------------------------------------------------------------------------------------
-/** <a href="https://github.com/neoforged/ModDevGradle?tab=readme-ov-file#basic-usage-for-neoforge-mods">NeoForge extension</a> */
 neoForge {
-    enable {
-        version = libs.versions.loader.get()
-        enabledSourceSets = mods.collectMany { [it.main, it.test] }
-    }
-    parchment.parchmentArtifact = libs.mappings.get().toString()
+    version = modDependencies.neoforge.version
+    // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#access-transformers
+    // https://docs.neoforged.net/docs/advanced/accesstransformers
+    mods.forEach { accessTransformers.from fileTree(it.resourcesDir / metaDirName / "accesstransformer.cfg") }
     validateAccessTransformers = true
 }
-mods.forEach { ConfigObject mod -> setupNeoForge(mod) }
 
 // -------------------------------------------------------------------------------------------------
-// Compilation
+// Mod Dependencies
 // -------------------------------------------------------------------------------------------------
-/** <a href="https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/scala/ScalaPluginExtension.html">Scala plugin extension</a> */
-scala {
-    scalaVersion = libs.versions.scala
-    zincVersion  = libs.versions.zinc
+repositories { platforms.values().forEach { Platform platform -> add(maven {
+    url = platform.mavenUri
+    // https://docs.gradle.org/current/userguide/filtering_repository_content.html#sec:declaring-repository-filter
+    content { includeGroup platform.mavenGroup }
+} ) } }
+
+mods.forEach { LocalMod mod ->
+    String jarJarName = mod.taskName(tasks.jarJar)
+    JarJar.registerWithConfiguration(project, jarJarName)
+    extend(mod.test, mod.main)
+    mod.dependencies(required).forEach { dep ->
+        // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#isolated-source-sets
+        if(dep == modDependencies.neoforge && mod.main != sourceSets.main)
+            neoForge.addModdingDependenciesTo(mod.main)
+        else if(dep.isLocal)
+            extend(mod.main, modsToBuild[dep.name].main)
+        else dependencies.add(mod.main.implementationConfigurationName, dep.devCoordinates)
+    }
+    mod.dependencies(compatible).forEach { dep ->
+        dependencies.add(mod.main.compileOnlyConfigurationName, dep.devCoordinates)
+    }
+    mod.dependencies(incompatible).forEach { dep ->
+        dependencies.add(mod.main.implementationConfigurationName, dep.moduleId) {
+            version { reject dep.versionRange }
+    } }
+    mod.dependencies(embedded).forEach { dep ->
+        if(dep != modDependencies.scala) // handled by Scala plugin
+            dependencies.add(mod.main.implementationConfigurationName, dep.devCoordinates)
+        dependencies.add(jarJarName, dep.moduleId) {
+            version { strictly dep.versionRange; prefer dep.version }
+    } }
 }
+
+// -------------------------------------------------------------------------------------------------
+// Mod Compilation
+// -------------------------------------------------------------------------------------------------
+// https://docs.gradle.org/current/userguide/toolchains.html#sec:using-java-toolchains
+java.toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
+// https://docs.gradle.org/current/userguide/scala_plugin.html#sec:scala_version
+scala.scalaVersion = modDependencies.scala.version
 /** <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.scala.ScalaCompile.html">Scala compilation tasks</a> */
 tasks.withType(ScalaCompile).configureEach {
-    scalaCompileOptions.additionalParameters = (csvProperty("compilerOptions") +
-        csvProperty("languageFeatures").collect { "language:experimental.$it" }
+    scalaCompileOptions.additionalParameters = (
+        compilerOptions.asCsvSeq() +
+        languageFeatures.asCsvSeq().collect { "language:experimental.$it" }
     ).collect { "-$it".toString() } // toString() avoids a casting bug in plugin
 }
 
 // -------------------------------------------------------------------------------------------------
-// Assembly
+// Mod Resources
 // -------------------------------------------------------------------------------------------------
-tasks.jar { enabled = false; dependsOn tasks.shadowJar }
-tasks.shadowJar.enabled = false // our jar tasks are mod-specific
-mods.forEach { ConfigObject mod -> tasks.shadowJar.dependsOn jarTask(mod) }
+mods.forEach { LocalMod mod ->
+    File generatedResourcesDir = buildDir / "generated/resources/$mod.name"
+    TaskProvider generateMetadata = tasks.register(mod.prefixed("metadata"), WriteTextFile) {
+        // https://docs.neoforged.net/docs/gettingstarted/modfiles#neoforgemodstoml
+        outputFile = generatedResourcesDir / metaDirName / "neoforge.mods.toml"
+        text = mod.metadata(neoForge.minecraftVersion).joinLines()
+        outputs.upToDateWhen { false } // always re-generate
+    }
+    mod.main.resources.srcDir generatedResourcesDir
+    tasks[mod.main.processResourcesTaskName].dependsOn generateMetadata
+    // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#running-tasks-on-ide-project-synchronization
+    neoForge.ideSyncTask generateMetadata
+}
 
 // -------------------------------------------------------------------------------------------------
-// Publishing
+// Local testing
 // -------------------------------------------------------------------------------------------------
-gradle.startParameter.excludedTaskNames.add tasks.publishMods.name // prevent accidents
-project.version = 0 // just to satisfy mod-publish-plugin; real versions are mod-specific
-mods.forEach { ConfigObject mod -> setupPublishing(mod) }
+/** Set up <a href="https://docs.neoforged.net/toolchain/docs/plugins/mdg/#isolated-source-sets">NeoForge mods</a> */
+mods.forEach { LocalMod mod -> neoForge.mods.create(mod.name) { sourceSet mod.main } }
+/** Set up <a href="https://docs.neoforged.net/toolchain/docs/plugins/mdg/#runs">NeoForge runs</a> */
+appMods.forEach { LocalMod mod -> ["client", "server"].forEach { runType ->
+    ([null] + mod.dependencies(compatible)).forEach { otherMod ->
+        String runName = [mod.name, runType, otherMod? "with-$otherMod": ""].joinDashed()
+        var modsToLoad = neoForge.mods.named { name ->
+            name == mod.name || otherMod?.name == name ||
+              mod.dependencies(required).any { it.name == name }
+        }
+        neoForge.runs.register(runName) {
+            type = runType
+            sourceSet = mod.main
+            loadedMods = modsToLoad
+            gameDirectory = mkdir("run/$runName")
+} } } }
+
+// -------------------------------------------------------------------------------------------------
+// Assembly
+// -------------------------------------------------------------------------------------------------
+tasks.jar.enabled = false // our jar tasks are mod-specific
+mods.forEach { LocalMod mod ->
+    def jarTask = { boolean dev ->
+        tasks.register(mod.taskName(tasks.jar) + (dev? "Dev": ""), Jar) {
+            from(mod.main.output, tasks[mod.taskName(tasks.jarJar)])
+            if(dev) from mod.main.allSource.srcDirs.named("scala")
+            archiveBaseName = mod.name // not mavenName, that's the project ID on default platform
+            // https://docs.neoforged.net/docs/gettingstarted/versioning#semantic-versioning
+            archiveVersion = mod.version
+            // https://docs.neoforged.net/docs/gettingstarted/versioning#including-the-mod-loader
+            archiveClassifier = "for-$modDependencies.neoforge.name" + (dev? "-$mod.devClassifier": "")
+        }
+    }
+    tasks.jar.dependsOn jarTask(false)
+    if(mod.devClassifier) tasks.jar.dependsOn jarTask(true)
+}
 
 // -------------------------------------------------------------------------------------------------
 // Documentation
 // -------------------------------------------------------------------------------------------------
-tasks.build.dependsOn writeFileTask("writeReadme", "documentation", "README.md",
-    ["# " + project.title, project.description, ""] + mods.collectMany { readmeSection(it) }
-)
+List<String> readmeParagraphs = [
+    "# $repository.displayName",
+    "<!-- This file is automatically generated by Gradle configuration; do not edit manually. -->",
+    repository.badgesMarkdown, repository.description] +
+    ["## Mods" ] + localMods.values().collectMany { it.markdownParagraphs } +
+    ["## Authors"] + authors.values().collectMany { it.markdownParagraphs }
+
+// https://docs.neoforged.net/toolchain/docs/plugins/mdg/#running-tasks-on-ide-project-synchronization
+neoForge.ideSyncTask tasks.register("writeReadme", WriteTextFile) {
+    outputFile = file("README.md")
+    text = readmeParagraphs.joinParagraphs()
+    tasks.build.dependsOn it
+    outputs.upToDateWhen { false } // always re-generate
+}
 
 // -------------------------------------------------------------------------------------------------
 // Gradle
 // -------------------------------------------------------------------------------------------------
 /** <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Wrapper</a> */
 wrapper {
-    gradleVersion = libs.versions.gradle.get()
+    gradleVersion = project.gradleVersion
     distributionType = Wrapper.DistributionType.ALL
 }
 // Re-categorize some tasks
-Map<String, String> taskGroups = [
-    "classes": "classes", "compile": "classes", "resources": "resources",
-    "preparekotlin": "build setup", "publications": "mod development/internal"
-]
 tasks.configureEach { task ->
-    taskGroups.forEach { substring, group ->
+    TaskGroups.mappings.forEach { substring, group ->
         if(task.name.toLowerCase().contains(substring)) task.group = group
-    }
-}
+} }
+
+// -------------------------------------------------------------------------------------------------
+// GitHub CI
+// -------------------------------------------------------------------------------------------------
+// https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
+tasks.register("testingMatrix", WriteTextFile) { group = "ci"
+    outputFile = file(envVar("GITHUB_OUTPUT", "build/GITHUB_OUTPUT"))
+    text = toJson([args: modDependencies.collectMany { name, dep ->
+        def arg = { k, v -> "-Ddependencies.${name}.$k=$v" }
+        String versionArg = arg("version", dep.minVersion)
+        String reqTypeArg = arg("type", Dependency.Type.required)
+        (dep.hasVersionRange? [versionArg]: []) +
+        (dep.type == compatible? [reqTypeArg, dep.hasVersionRange? "$reqTypeArg $versionArg": []]: [])
+} ]) }
 
 // -------------------------------------------------------------------------------------------------
 // IntelliJ IDEA
@@ -124,33 +217,28 @@ if(System.getProperty("idea.active")) {
     apply plugin: "idea"   // https://docs.gradle.org/current/userguide/idea_plugin.html
     // https://www.jetbrains.com/help/idea/working-with-module-dependencies.html#dependency-scope
     // Map Gradle compileOnly configurations to IDEA Provided scope (via a resolvable sub-config)
-    mods.forEach { ConfigObject mod -> idea.module.scopes.PROVIDED.plus.add(
-        configurations.resolvable("provided" + mod.name) {
-            extendsFrom configurations.getByName(mod.main.compileOnlyConfigurationName)
+    mods.forEach { LocalMod mod -> idea.module.scopes.PROVIDED.plus.add(
+        configurations.resolvable("provided$mod.pascalCaseName") {
+            extendsFrom configurations[mod.main.compileOnlyConfigurationName]
         }.get()
-    ) }
-}
+) } }
 
 // -------------------------------------------------------------------------------------------------
-// Utilities
+// Utility functions
 // -------------------------------------------------------------------------------------------------
-List<String> csvProperty(String key) { properties[key].split(",")*.trim() - "" }
 
-File buildSubdir(String subdir) { layout.buildDirectory.dir(subdir).get().asFile }
-
-TaskProvider writeFileTask(String taskName, String taskGroup, String fileName, List<String> lines) {
-    TaskProvider task = tasks.register(taskName, WriteFile) {
-        group = taskGroup
-        outputFile = file(fileName)
-        textLines = lines
-    }
-    // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#running-tasks-on-ide-project-synchronization
-    neoForge.ideSyncTask task
-    task
+String versionFromRange(Dependency dep) {
+    Configuration config = configurations.create dep.name
+    dependencies.add(config.name, dep.coordinatesWithRange)
+    config.incoming.resolutionResult.allComponents*.id.find {
+        it.toString().startsWith(dep.moduleId)
+    }.version
 }
 
-abstract class WriteFile extends DefaultTask {
-    @Input abstract ListProperty<String> getTextLines()
-    @OutputFile abstract RegularFileProperty getOutputFile()
-    @TaskAction void write() { outputFile.get().asFile.text = textLines.get().join("\n") + "\n" }
+void extend(SourceSet child, SourceSet parent) {
+    configurations[child.compileClasspathConfigurationName].extendsFrom(
+        configurations[parent.compileClasspathConfigurationName])
+    configurations[child.runtimeClasspathConfigurationName].extendsFrom(
+        configurations[parent.runtimeClasspathConfigurationName])
+    dependencies.add(child.implementationConfigurationName, parent.output)
 }

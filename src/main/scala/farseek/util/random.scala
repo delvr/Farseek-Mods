@@ -3,7 +3,7 @@ package farseek.util
 import farseek.util.imports.*
 
 type Probability = `[0,1]`
-val Probability = `[0,1]`
+val  Probability = `[0,1]`
 
 val Never:      Probability = `0.0`
 val HalfChance: Probability = `0.5`

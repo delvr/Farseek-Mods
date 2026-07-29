@@ -1,0 +1,27 @@
+name: Build and test
+on  : push
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+    - name: Setup build
+      uses: ./.github/actions/setup-build
+    - name: Generate testing matrix
+      run: ./gradlew testingMatrix
+  build-and-test:
+    needs: setup
+    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
+    strategy:
+      # https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#fromjson
+      matrix:
+        arg: ${{fromJSON(needs.setup.outputs.args)}}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+    - name: Setup build
+      uses: ./.github/actions/setup-build
+    - name: Build and test with ${{matrix.arg}}
+      run : ./gradlew build ${{matrix.arg}}

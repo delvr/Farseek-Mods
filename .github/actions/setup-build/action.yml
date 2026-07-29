@@ -1,0 +1,16 @@
+name: Setup build
+description: Setup Java and Gradle
+# https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax
+runs:
+  # https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#runs-for-composite-actions
+  using: composite
+  steps:
+  # https://github.com/actions/setup-java
+  - name: Setup Java
+    uses: actions/setup-java@v5
+    with:
+      # https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#java-version-file
+      java-version-file: .sdkmanrc
+  # https://github.com/gradle/actions/blob/main/docs/setup-gradle.md
+  - name: Setup Gradle
+    uses: gradle/actions/setup-gradle@v6

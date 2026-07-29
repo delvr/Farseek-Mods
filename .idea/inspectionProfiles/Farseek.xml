@@ -717,6 +717,7 @@
     <inspection_tool class="ConditionalExpressionWithIdenticalBranches" enabled="true" level="INFORMATION" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
+    <inspection_tool class="ConfigurationAvoidance" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="ConfusingElse" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES">
       <scope name="Project Files" level="INFORMATION" enabled="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES">
         <option name="reportWhenNoStatementFollow" value="true" />
@@ -982,7 +983,6 @@
     <inspection_tool class="DuplicateThrows" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES">
       <scope name="Project Files" level="WARNING" enabled="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES" />
     </inspection_tool>
-    <inspection_tool class="DuplicatedCode" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="DynamicRegexReplaceableByCompiledPattern" enabled="true" level="INFORMATION" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
@@ -1332,7 +1332,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GrFinalVariableAccess" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GrMethodMayBeStatic" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="false" />
@@ -1343,7 +1343,7 @@
     <inspection_tool class="GrReassignedInClosureLocalVar" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
-    <inspection_tool class="GrStringStyleViolation" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+    <inspection_tool class="GrStringStyleViolation" enabled="false" level="WEAK WARNING" enabled_by_default="false">
       <option name="plainStringQuotation" value="DOUBLE_QUOTED" />
     </inspection_tool>
     <inspection_tool class="GrUnnecessaryDefModifier" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES">
@@ -1363,7 +1363,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyAccessibility" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyAnnotationNamingConvention" enabled="false" level="WARNING" enabled_by_default="false">
       <scope name="Project Files" level="WARNING" enabled="false">
@@ -1415,7 +1415,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyConditionalCanBeElvis" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyConditionalWithIdenticalBranches" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
@@ -1427,7 +1427,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyConstantNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_regex" value="[A-Z\d]*" />
         <option name="m_minLength" value="4" />
         <option name="m_maxLength" value="32" />
@@ -1498,7 +1498,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyIfStatementWithTooManyBranches" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_limit" value="3" />
       </scope>
       <option name="m_limit" value="3" />
@@ -1513,7 +1513,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyInstanceMethodNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_regex" value="[a-z][A-Za-z\d]*" />
         <option name="m_minLength" value="4" />
         <option name="m_maxLength" value="32" />
@@ -1577,7 +1577,7 @@
       <option name="m_limit" value="5" />
     </inspection_tool>
     <inspection_tool class="GroovyMethodWithMoreThanThreeNegations" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyMissingReturnStatement" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
@@ -1592,16 +1592,16 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyNegatedIf" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyNestedAssignment" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyNestedConditional" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyNestedSwitch" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyNestedSynchronizedStatement" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
@@ -1616,13 +1616,13 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyOverlyComplexArithmeticExpression" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_limit" value="3" />
       </scope>
       <option name="m_limit" value="3" />
     </inspection_tool>
     <inspection_tool class="GroovyOverlyComplexBooleanExpression" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_limit" value="3" />
       </scope>
       <option name="m_limit" value="3" />
@@ -1634,7 +1634,7 @@
       <option name="m_limit" value="10" />
     </inspection_tool>
     <inspection_tool class="GroovyOverlyLongMethod" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_limit" value="30" />
       </scope>
       <option name="m_limit" value="30" />
@@ -1668,7 +1668,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyResultOfAssignmentUsed" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="GroovyResultOfIncrementOrDecrementUsed" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
@@ -1686,7 +1686,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="GroovyStaticMethodNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_regex" value="[a-z][A-Za-z\d]*" />
         <option name="m_minLength" value="4" />
         <option name="m_maxLength" value="32" />
@@ -1696,7 +1696,7 @@
       <option name="m_maxLength" value="32" />
     </inspection_tool>
     <inspection_tool class="GroovyStaticVariableNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true">
+      <scope name="Project Files" level="WARNING" enabled="false">
         <option name="m_regex" value="s_[a-z][A-Za-z\d]*" />
         <option name="m_minLength" value="4" />
         <option name="m_maxLength" value="32" />
@@ -2316,6 +2316,7 @@
     <inspection_tool class="JsonDuplicatePropertyKeys" enabled="true" level="WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
+    <inspection_tool class="JsonSchemaRefReference" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="JsonStandardCompliance" enabled="true" level="ERROR" enabled_by_default="true">
       <scope name="Project Files" level="ERROR" enabled="true">
         <option name="myWarnAboutComments" value="false" />
@@ -2765,10 +2766,10 @@
       </scope>
       <option name="checkDivision" value="false" />
     </inspection_tool>
-    <inspection_tool class="MutatorLikeMethodIsParameterless" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="NakedNotify" enabled="true" level="INFORMATION" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
+    <inspection_tool class="NameDoesntMatchTargetClass" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="NativeMethodNamingConvention" enabled="true" level="WARNING" enabled_by_default="false">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
@@ -2811,6 +2812,7 @@
       </scope>
       <option name="m_ignoreFieldInitializations" value="true" />
     </inspection_tool>
+    <inspection_tool class="NestedStatefulMonads" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="NestedSwitchStatement" enabled="true" level="INFORMATION" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
@@ -3448,7 +3450,6 @@
       <option name="ignoreSerializable" value="false" />
       <option name="ignoreCloneable" value="false" />
     </inspection_tool>
-    <inspection_tool class="RedundantInnerClassModifier" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantLabelMigration" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantLabeledSwitchRuleCodeBlock" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES">
       <scope name="Project Files" level="WARNING" enabled="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES" />
@@ -3494,7 +3495,6 @@
       <option name="ignoreEmptySuperMethods" value="false" />
       <option name="onlyReportWhenAnnotated" value="true" />
     </inspection_tool>
-    <inspection_tool class="RegExpAnonymousGroup" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RepeatedSpace" enabled="true" level="WARNING" enabled_by_default="false">
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
@@ -3623,7 +3623,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="SerializableHasSerialVersionUIDField" enabled="true" level="INFORMATION" enabled_by_default="true">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="false" />
     </inspection_tool>
     <inspection_tool class="SerializableHasSerializationMethods" enabled="true" level="INFORMATION" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true">
@@ -3745,7 +3745,7 @@
     </inspection_tool>
     <inspection_tool class="SpellCheckingInspection" enabled="true" level="TYPO" enabled_by_default="true">
       <scope name="Project Files" level="TYPO" enabled="true">
-        <option name="processCode" value="false" />
+        <option name="processCode" value="true" />
         <option name="processLiterals" value="true" />
         <option name="processComments" value="true" />
       </scope>
@@ -3924,7 +3924,7 @@
       <scope name="Project Files" level="WARNING" enabled="true" />
     </inspection_tool>
     <inspection_tool class="SubstringZero" enabled="true" level="WARNING" enabled_by_default="false">
-      <scope name="Project Files" level="WARNING" enabled="true" />
+      <scope name="Project Files" level="WARNING" enabled="true" editorAttributes="NOT_USED_ELEMENT_ATTRIBUTES" />
     </inspection_tool>
     <inspection_tool class="SubtractionInCompareTo" enabled="true" level="INFORMATION" enabled_by_default="true">
       <scope name="Project Files" level="WARNING" enabled="true" />

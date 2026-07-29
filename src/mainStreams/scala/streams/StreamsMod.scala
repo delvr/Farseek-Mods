@@ -6,11 +6,7 @@ import farseek.game.{*, given}
 import farseek.util.imports.*
 import farseek.util.{*, given}
 import net.minecraft.world.level.*
-import net.neoforged.neoforge.client.extensions.common.*
-import net.neoforged.neoforge.common.NeoForgeMod.*
-import net.neoforged.neoforge.fluids.*
 import streams.blocks.*
-import streams.client.*
 import streams.fluids.*
 import streams.items.*
 import streams.world.gen.*
@@ -19,6 +15,7 @@ import streams.world.gen.*
 
 @Mod(StreamsMod.Id) final class StreamsMod(using IEventBus):
   subscribe(StreamsMod.Blocks)
+  // https://docs.neoforged.net/docs/concepts/events#ieventbusaddlistener
   GameBus.addListener(preBuildSurface)
   GameBus.addListener(postBuildSurface)
   GameBus.addListener(chunkLoaded)
@@ -32,10 +29,7 @@ object StreamsMod extends ModCompanion:
   val AirFlow: ResourceKey[Block] = resourceKey(BLOCK, resource("airflow"))
   val FlowEnchantment: ResourceKey[Enchantment] = resourceKey(ENCHANTMENT, resource("flow"))
 
-  private val Blocks = preregister(BLOCK, AirFlow.location.getPath, StreamsAirFlowBlock)
-
-  def fluidExtensions(extensions: IClientFluidTypeExtensions, types: Array[FluidType]): IClientFluidTypeExtensions =
-    if types.contains(WATER_TYPE.value) then FluidExtensionsWrapper(extensions) else extensions
+  private val Blocks = preregister(BLOCK, AirFlow.identifier.getPath, StreamsAirFlowBlock)
 
   def fluidHeight(reader: BlockGetter, here: BlockPos): JOption[JFloat] =
     given BlockGetter = reader

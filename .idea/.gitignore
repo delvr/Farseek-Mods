@@ -1,4 +1,6 @@
+# Ignore everything...
 *
+# ... except:
 !.gitignore
 !codeStyles/
 !codeStyles/*
@@ -8,11 +10,10 @@
 !inspectionProfiles/*
 !scopes/
 !scopes/*
-
 !externalDependencies.xml
 !gradle.xml
 !jsonSchemas.xml
 !scala_settings.xml
 !vcs.xml
-
+# Re-ignore within the above:
 .DS_Store

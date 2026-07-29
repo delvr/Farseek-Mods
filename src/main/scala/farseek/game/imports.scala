@@ -6,7 +6,7 @@ object imports:
   export net.minecraft.client.multiplayer.ClientLevel
   export net.minecraft.core.{BlockPos, Direction, Holder, Registry, RegistryAccess}
   export net.minecraft.core.registries.Registries.*
-  export net.minecraft.resources.{ResourceLocation, ResourceKey}
+  export net.minecraft.resources.{Identifier, ResourceKey}
   export net.minecraft.server.level.{ServerLevel, WorldGenRegion}
   export net.minecraft.tags.TagKey
   export net.minecraft.util.RandomSource

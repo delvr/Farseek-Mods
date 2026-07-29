@@ -1,0 +1,72 @@
+name: Publish mod
+on:
+  # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      mod-id:
+        description: Mod ID
+        required: true
+        type    : choice
+        options : [farseek, streams, repose]
+      release-type:
+        description: [Release type](https://github.com/npm/node-semver?tab=readme-ov-file#functions)
+        required: true
+        type    : choice
+        options : [major, premajor, minor, preminor, patch, prepatch, prerelease, release]
+      prerelease-id:
+        description: [Prerelease identifier](https://github.com/npm/node-semver?tab=readme-ov-file#prerelease-identifiers)
+        required: true
+        type    : choice
+        options : ['', alpha, beta]
+        default :  ''
+run-name: Publish ${{inputs.mod-id}} ${{inputs.release-type}} ${{inputs.prerelease-id}}
+jobs:
+  publish:
+    runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
+    environment: releases
+    permissions:
+      contents: write
+    steps:
+    # https://github.com/actions/checkout
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        # https://github.com/stefanzweifel/git-auto-commit-action?tab=readme-ov-file#checkout-the-correct-branch
+        ref: ${{github.head_ref}}
+    # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/bump.md
+    - name: Update mod changelog
+      id  : update-changelog
+      uses: release-flow/keep-a-changelog-action@v3
+      with:
+        command: bump
+        tag-prefix: ${{inputs.mod-id}}-
+        version   : ${{inputs.release-type}}
+        preid     : ${{inputs.prerelease-id}}
+        changelog : changelogs/${{inputs.mod-id}}.md
+        keep-unreleased-section    : true
+        fail-on-empty-release-notes: true
+    # Setup build
+    - name: Setup build
+      uses: ./.github/actions/setup-build
+    # Build mod using new version
+    - name: Build with Gradle
+      run : >
+        ./gradlew build -Dpublish.${{inputs.mod-id}}.version=${{steps.update-changelog.outputs.version}}
+        && find build/libs ! -name '${{inputs.mod-id}}-*' -delete
+    # https://github.com/stefanzweifel/git-auto-commit-action
+    - name: Commit changes (changelog, readme, etc.) and push with release tag
+      uses: stefanzweifel/git-auto-commit-action@v7
+      with:
+        commit_message : Prepare release ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
+        tagging_message:         Release ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
+        tag_name       :                 ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
+    # https://github.com/Kira-NT/mc-publish
+    - name: Publish mod
+      uses: Kira-NT/mc-publish@v3
+      with:
+        version   : ${{steps.update-changelog.outputs.version}}
+        changelog : ${{steps.update-changelog.outputs.release-notes}}
+        github-tag: ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
+        github-token    : ${{secrets.GITHUB_TOKEN}}
+        modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
+        curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}
