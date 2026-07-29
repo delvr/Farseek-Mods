@@ -200,13 +200,13 @@ tasks.configureEach { task ->
 // https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
 tasks.register("testingMatrix", WriteTextFile) { group = "ci"
     outputFile = file(configs.outputFile ?: "build/testingMatrix.out")
-    text = "matrix=" + toJson([args: modDependencies.collectMany { name, dep ->
+    text = "args=" + toJson(modDependencies.collectMany { name, dep ->
         def arg = { k, v -> "-Ddependencies.${name}.$k=$v" }
         String versionArg = arg("version", dep.minVersion)
         String reqTypeArg = arg("type", Dependency.Type.required)
         (dep.hasVersionRange? [versionArg]: []) +
         (dep.type == compatible? [reqTypeArg, dep.hasVersionRange? "$reqTypeArg $versionArg": []]: [])
-} ]) }
+} ) }
 
 // -------------------------------------------------------------------------------------------------
 // IntelliJ IDEA
