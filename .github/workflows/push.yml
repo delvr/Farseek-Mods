@@ -1,5 +1,5 @@
 name: Build and test
-on: push
+on  : push
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -9,7 +9,7 @@ jobs:
     - name: Setup build
       uses: ./.github/actions/setup-build
     - name: Generate testing matrix
-      run:  ./gradlew testingMatrix -DoutputFile=${{env.GITHUB_OUTPUT}}
+      run : ./gradlew testingMatrix -DoutputFile=$GITHUB_OUTPUT
   build-and-test:
     needs: setup
     # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
@@ -24,4 +24,4 @@ jobs:
     - name: Setup build
       uses: ./.github/actions/setup-build
     - name: Build and test with ${{matrix.arg}}
-      run:  ./gradlew build ${{matrix.arg}}
+      run : ./gradlew build ${{matrix.arg}}
