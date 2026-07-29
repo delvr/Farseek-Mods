@@ -12,7 +12,7 @@ jobs:
       id  : testingMatrix
       run : ./gradlew testingMatrix -DoutputFile=$GITHUB_OUTPUT
     outputs:
-      matrix: ${{steps.testingMatrix.outputs.args}}
+      args: ${{steps.testingMatrix.outputs.args}}
   build-and-test:
     needs: setup
     # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
