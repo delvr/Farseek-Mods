@@ -12,14 +12,14 @@ jobs:
       id  : testingMatrix
       run : ./gradlew testingMatrix -DoutputFile=$GITHUB_OUTPUT
     outputs:
-      args: ${{steps.testingMatrix.outputs.args}}
+      matrix: ${{steps.testingMatrix.outputs.matrix}}
   build-and-test:
     needs: setup
     # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
     strategy:
       # https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#fromjson
       matrix:
-        arg: ${{fromJSON(needs.setup.outputs.args)}}
+        arg: ${{fromJSON(needs.setup.outputs.matrix)}}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
