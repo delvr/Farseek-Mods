@@ -199,7 +199,7 @@ tasks.configureEach { task ->
 // -------------------------------------------------------------------------------------------------
 // https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
 tasks.register("testingMatrix", WriteTextFile) { group = "ci"
-    outputFile = file(envVar("GITHUB_OUTPUT", "build/GITHUB_OUTPUT"))
+    outputFile = file(configs.outputFile ?: "build/testingMatrix.out")
     text = toJson([args: modDependencies.collectMany { name, dep ->
         def arg = { k, v -> "-Ddependencies.${name}.$k=$v" }
         String versionArg = arg("version", dep.minVersion)
