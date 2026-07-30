@@ -26,5 +26,5 @@ jobs:
       uses: actions/checkout@v7
     - name: Setup build
       uses: ./.github/actions/setup-build
-    - name: Build and test with ${{matrix.arg}}
+    - name: Build and test with ${{matrix.arg || 'latest dependencies'}}
       run : ./gradlew build ${{matrix.arg}}
