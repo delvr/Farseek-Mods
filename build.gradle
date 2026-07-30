@@ -2,6 +2,7 @@
 plugins {
     id "scala" // https://docs.gradle.org/current/userguide/scala_plugin.html
     id "net.neoforged.moddev" version "latest.release" // https://github.com/neoforged/ModDevGradle
+    id "com.athaydes.sdkman"  version "latest.release" // https://github.com/renatoathaydes/sdkman-gradle-plugin
 }
 
 import com.typesafe.config.*
@@ -93,8 +94,6 @@ mods.forEach { LocalMod mod ->
 // -------------------------------------------------------------------------------------------------
 // Mod Compilation
 // -------------------------------------------------------------------------------------------------
-// https://docs.gradle.org/current/userguide/toolchains.html#sec:using-java-toolchains
-java.toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
 // https://docs.gradle.org/current/userguide/scala_plugin.html#sec:scala_version
 scala.scalaVersion = modDependencies.scala.version
 /** <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.scala.ScalaCompile.html">Scala compilation tasks</a> */

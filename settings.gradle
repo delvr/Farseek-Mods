@@ -1,5 +1,2 @@
 /** <a href="https://docs.gradle.org/current/userguide/plugins_intermediate.html#sec:plugin_management">Plugin repositories</a> */
 pluginManagement { repositories.gradlePluginPortal() }
-
-/** <a href="https://docs.gradle.org/current/userguide/toolchains.html#sub:download_repositories">JVM toolchain resolver</a> */
-plugins { id "org.gradle.toolchains.foojay-resolver-convention" version "latest.release" }
