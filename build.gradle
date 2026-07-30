@@ -2,7 +2,6 @@
 plugins {
     id "scala" // https://docs.gradle.org/current/userguide/scala_plugin.html
     id "net.neoforged.moddev" version "latest.release" // https://github.com/neoforged/ModDevGradle
-    id "com.athaydes.sdkman"  version "latest.release" // https://github.com/renatoathaydes/sdkman-gradle-plugin
 }
 
 import com.typesafe.config.*
