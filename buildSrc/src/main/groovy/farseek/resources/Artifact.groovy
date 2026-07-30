@@ -1,7 +1,6 @@
 package farseek.resources
 
 import groovy.transform.*
-import static farseek.utils.Utilities.*
 
 @ToString(includeNames = true, includeSuperProperties = true)
 class Artifact extends Resource {
@@ -10,15 +9,14 @@ class Artifact extends Resource {
     final String mavenGroup, mavenName, version, devClassifier
     final Map<Platform, String> platformIds
 
-    Artifact(String version, Map<String, String> props, Map<String, Map<String, String>> badgeProps,
+    Artifact(Map<String, String> props, Map<String, Map<String, String>> badgeProps,
              Map<String, Platform> platforms) {
         super(props + [badges: (props.badges?:[]) +
             (props.platformIds?:[:]).collect { k, v -> "$k:$v" }], badgeProps)
-        if(props.version) error("Property `version` not allowed in $name configuration")
-        this.version  = version ?: LocalVersion
-        platformIds  = (props.platformIds ?: [:]).mapKeys { platforms[it] }
+        platformIds   =(props.platformIds ?: [:]).mapKeys { platforms[it] }
         mavenGroup    = props.mavenGroup  ?: defaultPlatform.mavenGroup
         mavenName     = props.mavenName   ?: idForDefaultPlatform
+        version       = props.version     ?: LocalVersion
         devClassifier = props.devClassifier
     }
 

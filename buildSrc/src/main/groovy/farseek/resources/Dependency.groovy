@@ -12,9 +12,9 @@ class Dependency extends Artifact {
     final Type type
     final String minVersion, maxVersion
 
-    Dependency(String version, Map<String, String> props, Map<String, Map<String, String>> badgeProps,
+    Dependency(Map<String, String> props, Map<String, Map<String, String>> badgeProps,
                Map<String, Platform> platforms) {
-        super(version, props, badgeProps, platforms)
+        super(props, badgeProps, platforms)
         type       = props.type ?: Type.required
         minVersion = props.minVersion
         maxVersion = props.maxVersion

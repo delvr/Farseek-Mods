@@ -11,7 +11,6 @@ import farseek.tasks.*
 import net.neoforged.moddevgradle.tasks.*
 import static farseek.resources.Dependency.Type.*
 import static farseek.utils.Constants.*
-import static farseek.utils.Utilities.*
 import static groovy.json.JsonOutput.*
 
 // -------------------------------------------------------------------------------------------------
@@ -31,14 +30,15 @@ Map<String, Resource> authors = configs.authors.withNames { new Resource(it, bad
 Map<String, Platform> platforms = configs.platforms.withNames { new Platform(it, badges) }
 // Mod dependencies
 Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map props ->
-    Dependency tmpDep = new Dependency(null, props, badges, platforms)
-    String version = configs.mods[tmpDep.name] && !configs.publish? null: versionFromRange(tmpDep)
-    new Dependency(version, props, badges, platforms)
+    Dependency tmpDep = new Dependency(props, badges, platforms)
+    String version = props.version ?:
+        (configs.mods[tmpDep.name] && !configs.publish? null: versionFromRange(tmpDep))
+    new Dependency(props + [version: version], badges, platforms)
 }
 // Local mods
 Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
     String version = configs.publish?.get(props.name)?.version
-    new LocalMod(version, props, badges, platforms, modDependencies, sourceSets)
+    new LocalMod(props + [version: version], badges, platforms, modDependencies, sourceSets)
 }
 Map<String, LocalMod> modsToBuild = localMods.filterByValue { !it.skipBuild }
 List<LocalMod> appMods = modsToBuild.values().toList() - modsToBuild.farseek
@@ -199,7 +199,7 @@ tasks.configureEach { task ->
 // https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
 tasks.register("testingMatrix", WriteTextFile) { group = "ci"
     outputFile = file(configs.outputFile ?: "build/testingMatrix.out")
-    text = "args=" + toJson(modDependencies.collectMany { name, dep ->
+    text = "args=" + toJson([""] + modDependencies.collectMany { name, dep ->
         def arg = { k, v -> "-Ddependencies.${name}.$k=$v" }
         String versionArg = arg("version", dep.minVersion)
         String reqTypeArg = arg("type", Dependency.Type.required)

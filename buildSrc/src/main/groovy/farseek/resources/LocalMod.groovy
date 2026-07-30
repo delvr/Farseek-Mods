@@ -16,10 +16,10 @@ class LocalMod extends Artifact {
     final File sourceRoot, outputRoot
     final boolean skipBuild
 
-    LocalMod(String version, Map<String, String> props, Map<String, Map<String, String>> badgeProps,
+    LocalMod(Map<String, String> props, Map<String, Map<String, String>> badgeProps,
              Map<String, Platform> platforms, Map<String, Dependency> modDependencies,
              SourceSetContainer sourceSets) {
-        super(version, props + [mavenName: props.mavenName ?: props.name], badgeProps, platforms)
+        super(props + [mavenName: props.mavenName ?: props.name], badgeProps, platforms)
         license      = props.license
         issuesPage   = props.issuesPage.asUri()
         authors      = props.authors
