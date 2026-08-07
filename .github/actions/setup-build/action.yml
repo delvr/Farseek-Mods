@@ -5,12 +5,19 @@ runs:
   # https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#runs-for-composite-actions
   using: composite
   steps:
+  # https://github.com/madhead/read-java-properties
+  - name: Read Java version from Gradle properties
+    id  : java-version
+    uses: madhead/read-java-properties@4
+    with:
+      file: gradle/gradle-daemon-jvm.properties
+      property: toolchainVersion
   # https://github.com/actions/setup-java
-  - name: Setup Java
+  - name: Setup Java ${{steps.java-version.outputs.value}}
     uses: actions/setup-java@v5
     with:
-      # https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#java-version-file
-      java-version-file: .sdkmanrc
+      java-version: ${{steps.java-version.outputs.value}}
+      distribution: microsoft
   # https://github.com/gradle/actions/blob/main/docs/setup-gradle.md
   - name: Setup Gradle
     uses: gradle/actions/setup-gradle@v6

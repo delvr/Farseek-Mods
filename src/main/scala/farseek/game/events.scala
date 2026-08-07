@@ -39,7 +39,6 @@ trait EventWithResponse[R] extends Event:
       event.cancel()
       apply(event, result)
 
-given InteractionEvent[RightClickItem]         = _.setCancellationResult(_)
-given InteractionEvent[RightClickBlock]        = _.setCancellationResult(_)
-given InteractionEvent[EntityInteract]         = _.setCancellationResult(_)
-given InteractionEvent[EntityInteractSpecific] = _.setCancellationResult(_)
+given InteractionEvent[EntityInteract]  = _.setCancellationResult(_)
+given InteractionEvent[RightClickBlock] = _.setCancellationResult(_)
+given InteractionEvent[RightClickItem]  = _.setCancellationResult(_)

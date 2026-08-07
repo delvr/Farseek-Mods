@@ -57,9 +57,7 @@ Another limitation in the current version is that a solid floor is created in al
 
 In addition to the worldgen changes described above, the new Streams allows generating rivers from scratch using enchanted buckets that force a fixed flow on "flat" water blocks. I won't go into much detail for now (see [this video](https://www.youtube.com/watch?v=IcrG1d5vTnI) for a demo); note that the enchantments are called "Flow", have 3 levels for 3 flow speeds, and must be applied on a bucket that already has a liquid in it (empty buckets can be enchanted but will have no effect).
 
-That's about it for now. Please use GitHub issues for comments, suggestions and bug reports. If possible, try to specify which subtype of streams you're discussing (main stems or tributary networks) and make sure you're aware of their characteristics and limitations described above, before filing a bug. Thanks, and enjoy!
-
--delvr.
+Please use GitHub issues for comments, suggestions and bug reports. If possible, try to specify which subtype of streams you're discussing (main stems or tributary networks) and make sure you're aware of their characteristics and limitations described above, before filing a bug.
 
 ### Repose
 
