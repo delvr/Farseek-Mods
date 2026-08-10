@@ -8,13 +8,15 @@ on:
         required: true
         type    : choice
         options : [farseek, streams, repose]
+      # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/bump.md#action-inputs
       release-type:
-        description: '[Release type](https://github.com/npm/node-semver?tab=readme-ov-file#functions)'
+        description: Release type
         required: true
         type    : choice
         options : [major, premajor, minor, preminor, patch, prepatch, prerelease, release]
+      # https://github.com/npm/node-semver?tab=readme-ov-file#prerelease-identifiers
       prerelease-id:
-        description: '[Prerelease identifier](https://github.com/npm/node-semver?tab=readme-ov-file#prerelease-identifiers)'
+        description: Prerelease identifier
         required: true
         type    : choice
         options : ['', alpha, beta]
