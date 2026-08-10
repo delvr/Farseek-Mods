@@ -31,15 +31,15 @@ Map<String, Platform> platforms = configs.platforms.withNames { new Platform(it,
 // Mod dependencies
 Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map props ->
     Dependency tmpDep = new Dependency(props, badges, platforms)
-    String version = props.version ?:
-        (configs.mods[tmpDep.name] && !configs.publish? null: versionFromRange(tmpDep))
+    boolean isMod = configs.mods[tmpDep.name]
+    boolean publishing = System.getenv("GITHUB_JOB") == "publish"
+    String version = props.version ?: (isMod && !publishing? null: versionFromRange(tmpDep))
     new Dependency(props + [version: version], badges, platforms)
 }
 
 // Local mods
 Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
-    String version = configs.publish?.get(props.name)?.version
-    new LocalMod(props + [version: version], badges, platforms, modDependencies, sourceSets)
+    new LocalMod(props, badges, platforms, modDependencies, sourceSets)
 }
 Map<String, LocalMod> modsToBuild = localMods.filterByValue { !it.skipBuild }
 List<LocalMod> appMods = modsToBuild.values().toList() - modsToBuild.farseek
