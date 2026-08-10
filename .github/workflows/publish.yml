@@ -51,7 +51,7 @@ jobs:
     - name: Setup build
       uses: ./.github/actions/setup-build
     # Build mod using new version
-    - name: Build with Gradle
+    - name: Build ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
       run : >
         ./gradlew build -Dpublish.${{inputs.mod-id}}.version=${{steps.update-changelog.outputs.version}}
         && find build/libs ! -name '${{inputs.mod-id}}-*' -delete
