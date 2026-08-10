@@ -11,6 +11,7 @@ import net.neoforged.moddevgradle.tasks.*
 import static farseek.resources.Dependency.Type.*
 import static farseek.utils.Constants.*
 import static groovy.json.JsonOutput.*
+import static java.util.concurrent.TimeUnit.*
 
 // -------------------------------------------------------------------------------------------------
 // Resources configuration
@@ -34,6 +35,7 @@ Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map p
         (configs.mods[tmpDep.name] && !configs.publish? null: versionFromRange(tmpDep))
     new Dependency(props + [version: version], badges, platforms)
 }
+
 // Local mods
 Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
     String version = configs.publish?.get(props.name)?.version
@@ -211,8 +213,9 @@ tasks.register("testingMatrix", WriteTextFile) { group = "ci"
 // -------------------------------------------------------------------------------------------------
 // https://www.jetbrains.com/help/idea/work-with-gradle-projects.html
 if(System.getProperty("idea.active")) {
-    clean { delete "out" } // clean IDEA's build directory along with Gradle's
-    apply plugin: "idea"   // https://docs.gradle.org/current/userguide/idea_plugin.html
+    // when cleaning build/, also clean buildSrc/build and IDEA's build directories
+    clean { delete "buildSrc/build", "buildSrc/out", "out" }
+    apply plugin: "idea" // https://docs.gradle.org/current/userguide/idea_plugin.html
     // https://www.jetbrains.com/help/idea/working-with-module-dependencies.html#dependency-scope
     // Map Gradle compileOnly configurations to IDEA Provided scope (via a resolvable sub-config)
     mods.forEach { LocalMod mod -> idea.module.scopes.PROVIDED.plus.add(
@@ -227,10 +230,13 @@ if(System.getProperty("idea.active")) {
 
 String versionFromRange(Dependency dep) {
     Configuration config = configurations.create dep.name
+    config.resolutionStrategy { cacheDynamicVersionsFor 0, SECONDS }
     dependencies.add(config.name, dep.coordinatesWithRange)
-    config.incoming.resolutionResult.allComponents*.id.find {
+    var resolvedArtifact = config.incoming.resolutionResult.allComponents*.id.find {
         it.toString().startsWith(dep.moduleId)
-    }.version
+    }
+    if(resolvedArtifact) resolvedArtifact.version
+    else throw new RuntimeException("Cannot resolve $dep")
 }
 
 void extend(SourceSet child, SourceSet parent) {

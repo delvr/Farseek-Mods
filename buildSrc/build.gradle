@@ -23,8 +23,8 @@ String.metaClass {
     div      << { [delegate, it].joinPaths() }
     asCsvSeq << { delegate.splitAndTrim(",") }
     asCsvMap << { delegate.asCsvSeq().collectEntries { it.splitOnFirst(":") } }
-    splitAndTrim  << { regex, limit = 0 -> delegate.split(regex, limit)*.trim() - "" }
-    splitOnFirst  << { regex -> delegate.splitAndTrim(regex, 2) }
+    splitAndTrim << { regex, limit = 0 -> delegate.split(regex, limit)*.trim() - "" }
+    splitOnFirst << { regex -> delegate.splitAndTrim(regex, 2) }
     trimPath << { delegate.endsWith("/") && !delegate.endsWith("://") &&
                   delegate != "/" ? delegate.dropRight(1): delegate }
 }

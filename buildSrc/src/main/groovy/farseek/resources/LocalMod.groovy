@@ -9,7 +9,7 @@ import static farseek.resources.Dependency.Type.*
 @ToString(includeNames = true, includeSuperProperties = true)
 class LocalMod extends Artifact {
     final String license
-    final URI issuesPage
+    final URI licensePage, issuesPage
     final List<String> authors
     final List<Dependency> dependencies
     final SourceSet main, test
@@ -21,6 +21,7 @@ class LocalMod extends Artifact {
              SourceSetContainer sourceSets) {
         super(props + [mavenName: props.mavenName ?: props.name], badgeProps, platforms)
         license      = props.license
+        licensePage  = props.licensePage.asUri()
         issuesPage   = props.issuesPage.asUri()
         authors      = props.authors
         skipBuild    = props.skipBuild ?: false
@@ -45,6 +46,7 @@ class LocalMod extends Artifact {
     /** <a href="https://docs.neoforged.net/docs/gettingstarted/modfiles#neoforgemodstoml">neoforge.mods.toml</a>*/
     // https://github.com/Kira-NT/mc-publish
     List<String> metadata(String minecraftVersion) {
+        def image = { "$name-${it}.png" }
         String dependencyHeader = "dependencies.$name", mcPublishHeader = "mc-publish",
                dependencyMcPublishHeader = "${dependencyHeader}.${mcPublishHeader}"
         def dependency = { String name, String versionRange, Dependency.Type type = required ->
@@ -58,10 +60,11 @@ class LocalMod extends Artifact {
         }
         Map deps = [:]
         dependencies.forEach { if(it.type != embedded) deps += modDependency(it) }
-        Toml.lines([license: license, issueTrackerURL: issuesPage,
+        Toml.lines([license: license, licenseURL: licensePage, issueTrackerURL: issuesPage,
             ["mods"]: [
-                modId: name, displayName: displayName, description: description, version: version,
-                credits: authors, logoFile: "${name}.logo.png", displayURL: homepage
+                modId: name, displayName: displayName, displayURL: homepage, description: description,
+                version: version, authors: authors.joinWordList(),
+                iconFile: image("icon"), bannerFile: image("banner"),
             ], ["mixins"]: [config: "${name}.mixins.json"],
             [mcPublishHeader]: platformIds.mapKeys { it.mcPublishId }
             ] + // https://github.com/Kira-NT/mc-publish?tab=readme-ov-file#game-versions
