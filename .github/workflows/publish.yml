@@ -56,7 +56,7 @@ jobs:
         ./gradlew build -Dmods.${{inputs.mod-id}}.version=${{steps.update-changelog.outputs.version}}
         && find build/libs ! -name '${{inputs.mod-id}}-*' -delete
     # https://github.com/stefanzweifel/git-auto-commit-action
-    - name: Commit changes (changelog, readme, etc.) and push with release tag
+    - name: Commit changes and push with release tag
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message : Prepare release ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
