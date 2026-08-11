@@ -51,24 +51,24 @@ class LocalMod extends Artifact {
                dependencyMcPublishHeader = "${dependencyHeader}.${mcPublishHeader}"
         def dependency = { String name, String versionRange, Dependency.Type type = required ->
             // https://docs.neoforged.net/docs/gettingstarted/modfiles#dependency-configurations
-            [[dependencyHeader]: [modId: name, type: type.neoForgeName, versionRange: versionRange]]
+            Toml.lines([dependencyHeader], [modId: name, type: type.neoForgeName, versionRange: versionRange])
         }
         def modDependency = { Dependency dep ->
             dependency(dep.name, dep.isLocal? dep.version: dep.versionRange, dep.type) +
             // https://github.com/Kira-NT/mc-publish?tab=readme-ov-file#dependencies
-            dep.platformIds.ifNonEmpty { [(dependencyMcPublishHeader): it.mapKeys { it.mcPublishId }] }
+                (dep.platformIds? Toml.lines(dependencyMcPublishHeader,
+                    dep.platformIds.mapKeys { it.mcPublishId }): [])
         }
-        Map deps = [:]
-        dependencies.forEach { if(it.type != embedded) deps += modDependency(it) }
-        Toml.lines([license: license, licenseURL: licensePage, issueTrackerURL: issuesPage,
+        Toml.lines([
+            license: license, licenseURL: licensePage, issueTrackerURL: issuesPage,
             ["mods"]: [
-                modId: name, displayName: displayName, displayURL: homepage, description: description,
-                version: version, authors: authors.joinWordList(),
+                modId: name, displayName: displayName, displayURL: homepage,
+                description: description, version: version, authors: authors.joinWordList(),
                 iconFile: image("icon"), bannerFile: image("banner"),
             ], ["mixins"]: [config: "${name}.mixins.json"],
             [mcPublishHeader]: platformIds.mapKeys { it.mcPublishId }
-            ] + // https://github.com/Kira-NT/mc-publish?tab=readme-ov-file#game-versions
-            [[dependencyHeader]: dependency("minecraft", minecraftVersion)] + deps)
+        ]) + dependency("minecraft", minecraftVersion) +
+        dependencies.findAll { it.type != embedded }.collectMany { modDependency(it) }
     }
 
     @Override List<String> getMarkdownParagraphs() { super.markdownParagraphs + [readmeFile.text] }
