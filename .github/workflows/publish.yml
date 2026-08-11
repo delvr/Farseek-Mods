@@ -35,6 +35,8 @@ jobs:
       with:
         # https://github.com/stefanzweifel/git-auto-commit-action?tab=readme-ov-file#checkout-the-correct-branch
         ref: ${{github.head_ref}}
+        # https://github.com/stefanzweifel/git-auto-commit-action#action-does-not-push-commit-to-repository-authentication-issue
+        persist-credentials: true
     # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/bump.md
     - name: Update mod changelog
       id  : update-changelog
