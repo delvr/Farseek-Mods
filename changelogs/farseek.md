@@ -6,17 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.0-beta.0] - 2026-08-11
+
 ### Added
+
 - Dependency on Scala Library (embedded with [Jar-in-Jar](https://docs.neoforged.net/toolchain/docs/dependencies/jarinjar/)).
+
 ### Changed
+
 - **Breaking:** Refactored all Scala APIs.
 - Updated NeoForge/Minecraft dependencies.
 
 ## [3.0.0-alpha.2] - 2025-11-21
+
 ### Added
+
 - API for worldgen noise areas and columns using the new `preliminarySurfaceLevel` function.
+
 ### Changed
+
 - **Breaking:** Refactored all Scala APIs.
 
 ## [3.0.0-alpha.1] - 2025-06-15
+
 Initial alpha release.
+
+[Unreleased]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-beta.0...HEAD
+
+[3.0.0-beta.0]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-alpha.2...farseek-3.0.0-beta.0
+
+[3.0.0-alpha.2]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-alpha.1...farseek-3.0.0-alpha.2
+
+[3.0.0-alpha.1]: https://github.com/delvr/Farseek-Mods/releases/tag/farseek-3.0.0-alpha.1
