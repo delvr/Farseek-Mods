@@ -72,6 +72,6 @@ jobs:
         changelog : ${{steps.changelog.outputs.release-notes}}
         github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         github-commitish: ${{github.ref_name}}
-        github-token    : ${{secrets.GITHUB_TOKEN}}
-        modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
         curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}
+        modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
+        github-token    : ${{secrets.GITHUB_TOKEN}}

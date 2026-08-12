@@ -22,7 +22,12 @@ on:
         description: Publish to GitHub
         required: true
         type: boolean
-run-name: Republish ${{inputs.mod-id}} to ${{inputs.curseforge == 'true' && 'CurseForge' || ''}} ${{inputs.modrinth == 'true' && 'Modrinth' || ''}} ${{inputs.github == 'true' && 'GitHub' || ''}}
+            #todo case
+run-name: >
+  Republish ${{inputs.mod-id}} to 
+  ${{case(inputs.curseforge == 'true', 'CurseForge', '')}}
+  ${{case(inputs.modrinth   == 'true', 'Modrinth'  , '')}}
+  ${{case(inputs.github     == 'true', 'GitHub'    , '')}}
 jobs:
   publish: # name expected in build.gradle
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
@@ -53,6 +58,6 @@ jobs:
         changelog : ${{steps.changelog.outputs.release-notes}}
         github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         github-commitish: ${{github.ref_name}}
-        github-token    : ${{inputs.github     == 'true' && secrets.GITHUB_TOKEN     || null}}
-        modrinth-token  : ${{inputs.modrinth   == 'true' && secrets.MODRINTH_TOKEN   || null}}
-        curseforge-token: ${{inputs.curseforge == 'true' && secrets.CURSEFORGE_TOKEN || null}}
+        curseforge-token: ${{case(inputs.curseforge == 'true', secrets.CURSEFORGE_TOKEN, null)}}
+        modrinth-token  : ${{case(inputs.modrinth   == 'true', secrets.MODRINTH_TOKEN  , null)}}
+        github-token    : ${{case(inputs.github     == 'true', secrets.GITHUB_TOKEN    , null)}}
