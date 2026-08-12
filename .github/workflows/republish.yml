@@ -1,4 +1,4 @@
-name: Publish a mod version that has an already-generated release tag
+name: Republish mod
 permissions:
   contents: read
 on:
@@ -11,18 +11,18 @@ on:
         type    : choice
         options : [farseek, streams, repose]
       curseforge:
-        description: Publish on CurseForge?
+        description: Publish to CurseForge
         required: true
         type: boolean
       modrinth:
-        description: Publish on Modrinth?
+        description: Publish to Modrinth
         required: true
         type: boolean
       github:
-        description: Publish on GitHub?
+        description: Publish to GitHub
         required: true
         type: boolean
-run-name: Republish ${{inputs.mod-id}}
+run-name: Republish ${{inputs.mod-id}} to ${{inputs.curseforge == 'true' && 'CurseForge' || ''}} ${{inputs.modrinth == 'true' && 'Modrinth' || ''}} ${{inputs.github == 'true' && 'GitHub' || ''}}
 jobs:
   publish: # name expected in build.gradle
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
@@ -37,6 +37,7 @@ jobs:
       uses: release-flow/keep-a-changelog-action@v3
       with:
         command: query
+        version: latest
         changelog: changelogs/${{inputs.mod-id}}.md
     # Setup build
     - name: Setup build
