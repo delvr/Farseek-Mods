@@ -1,4 +1,6 @@
 name: Publish mod
+permissions:
+  contents: read
 on:
   # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
   workflow_dispatch:
@@ -23,23 +25,23 @@ on:
         default :  ''
 run-name: Publish ${{inputs.mod-id}} ${{inputs.release-type}} ${{inputs.prerelease-id}}
 jobs:
-  publish:
+  publish: # name expected in build.gradle
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
     environment: releases
+    permissions:
+      contents: write
     steps:
     # https://github.com/actions/checkout
     - name: Checkout repository
       uses: actions/checkout@v7
       with:
-        # https://github.com/stefanzweifel/git-auto-commit-action?tab=readme-ov-file#checkout-the-correct-branch
-        ref: ${{github.head_ref}}
-        # https://github.com/stefanzweifel/git-auto-commit-action#push-to-protected-branches
-        token: ${{secrets.PUBLISH_TOKEN}}
+        # For bypassing PR requirement on branch when using git-auto-commit-action
+        ssh-key: ${{secrets.DEPLOY_KEY}}
         # https://github.com/stefanzweifel/git-auto-commit-action#action-does-not-push-commit-to-repository-authentication-issue
         persist-credentials: true
     # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/bump.md
     - name: Update mod changelog
-      id  : update-changelog
+      id  : changelog
       uses: release-flow/keep-a-changelog-action@v3
       with:
         command: bump
@@ -53,22 +55,23 @@ jobs:
     - name: Setup build
       uses: ./.github/actions/setup-build
     # Build mod using new version
-    - name: Build ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
-      run : ./gradlew build -Dmods.${{inputs.mod-id}}.version=${{steps.update-changelog.outputs.version}}
+    - name: Build ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+      run : ./gradlew build -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
     # https://github.com/stefanzweifel/git-auto-commit-action
     - name: Commit changes and push with release tag
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
-        commit_message : Prepare release ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
-        tagging_message:         Release ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
-        tag_name       :                 ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
+        commit_message : Prepare release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        tagging_message:         Release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        tag_name       :                 ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
     # https://github.com/Kira-NT/mc-publish
     - name: Publish mod
       uses: Kira-NT/mc-publish@v3
       with:
-        version   : ${{steps.update-changelog.outputs.version}}
-        changelog : ${{steps.update-changelog.outputs.release-notes}}
-        github-tag: ${{inputs.mod-id}}-${{steps.update-changelog.outputs.version}}
-        github-token    : ${{secrets.PUBLISH_TOKEN}}
+        version   : ${{steps.changelog.outputs.version}}
+        changelog : ${{steps.changelog.outputs.release-notes}}
+        github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        github-commitish: ${{github.ref_name}}
+        github-token    : ${{secrets.GITHUB_TOKEN}}
         modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
         curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}

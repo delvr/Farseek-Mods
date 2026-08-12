@@ -1,0 +1,57 @@
+name: Publish a mod version that has an already-generated release tag
+permissions:
+  contents: read
+on:
+  # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      mod-id:
+        description: Mod ID
+        required: true
+        type    : choice
+        options : [farseek, streams, repose]
+      curseforge:
+        description: Publish on CurseForge?
+        required: true
+        type: boolean
+      modrinth:
+        description: Publish on Modrinth?
+        required: true
+        type: boolean
+      github:
+        description: Publish on GitHub?
+        required: true
+        type: boolean
+run-name: Republish ${{inputs.mod-id}}
+jobs:
+  publish: # name expected in build.gradle
+    runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
+    environment: releases
+    steps:
+    # https://github.com/actions/checkout
+    - name: Checkout repository
+      uses: actions/checkout@v7
+    # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/query.md
+    - name: Get mod version from changelog
+      id  : changelog
+      uses: release-flow/keep-a-changelog-action@v3
+      with:
+        command: query
+        changelog: changelogs/${{inputs.mod-id}}.md
+    # Setup build
+    - name: Setup build
+      uses: ./.github/actions/setup-build
+    # Build mod using new version
+    - name: Build ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+      run : ./gradlew build -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
+    # https://github.com/Kira-NT/mc-publish
+    - name: Publish mod
+      uses: Kira-NT/mc-publish@v3
+      with:
+        version   : ${{steps.changelog.outputs.version}}
+        changelog : ${{steps.changelog.outputs.release-notes}}
+        github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        github-commitish: ${{github.ref_name}}
+        github-token    : ${{inputs.github     == 'true' && secrets.GITHUB_TOKEN     || null}}
+        modrinth-token  : ${{inputs.modrinth   == 'true' && secrets.MODRINTH_TOKEN   || null}}
+        curseforge-token: ${{inputs.curseforge == 'true' && secrets.CURSEFORGE_TOKEN || null}}

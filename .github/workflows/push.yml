@@ -1,5 +1,7 @@
 name: Build and test
-on  : push
+permissions:
+  contents: read
+on: push
 jobs:
   setup:
     runs-on: ubuntu-latest
