@@ -1,4 +1,4 @@
-name: Republish mod
+name: Republish mod to GitHub
 permissions:
   contents: read
 on:
@@ -10,24 +10,7 @@ on:
         required: true
         type    : choice
         options : [farseek, streams, repose]
-      curseforge:
-        description: Publish to CurseForge
-        required: true
-        type: boolean
-      modrinth:
-        description: Publish to Modrinth
-        required: true
-        type: boolean
-      github:
-        description: Publish to GitHub
-        required: true
-        type: boolean
-            #todo case
-run-name: >
-  Republish ${{inputs.mod-id}} to 
-  ${{case(inputs.curseforge == 'true', 'CurseForge', '')}}
-  ${{case(inputs.modrinth   == 'true', 'Modrinth'  , '')}}
-  ${{case(inputs.github     == 'true', 'GitHub'    , '')}}
+run-name: Republish ${{inputs.mod-id}} to GitHub
 jobs:
   publish: # name expected in build.gradle
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
@@ -58,6 +41,4 @@ jobs:
         changelog : ${{steps.changelog.outputs.release-notes}}
         github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         github-commitish: ${{github.ref_name}}
-        curseforge-token: ${{case(inputs.curseforge == 'true', secrets.CURSEFORGE_TOKEN, null)}}
-        modrinth-token  : ${{case(inputs.modrinth   == 'true', secrets.MODRINTH_TOKEN  , null)}}
-        github-token    : ${{case(inputs.github     == 'true', secrets.GITHUB_TOKEN    , null)}}
+        github-token    : ${{secrets.GITHUB_TOKEN}}
