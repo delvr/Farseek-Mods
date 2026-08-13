@@ -25,7 +25,7 @@ class LocalMod extends Artifact {
         issuesPage   = props.issuesPage.asUri()
         authors      = props.authors
         skipBuild    = props.skipBuild ?: false
-        dependencies = (props.dependencies ?: []).collect { modDependencies[it] }
+        dependencies = props.dependencies.collect { modDependencies[it] }
         def sourceSet = {
             name == "farseek"? it: sourceSets.create("$it.name$pascalCaseName") { scala }
         }

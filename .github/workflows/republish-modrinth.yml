@@ -12,7 +12,7 @@ on:
         options : [farseek, streams, repose]
 run-name: Republish ${{inputs.mod-id}} to Modrinth
 jobs:
-  publish: # name expected in build.gradle
+  republish:
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
     environment: releases
     steps:
@@ -32,13 +32,15 @@ jobs:
       uses: ./.github/actions/setup-build
     # Build mod using new version
     - name: Build ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
-      run : ./gradlew build -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
+      id  : build
+      run : ./gradlew buildToPublish -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
     # https://github.com/Kira-NT/mc-publish
     - name: Publish mod
       uses: Kira-NT/mc-publish@v3
       with:
+        name      : ${{steps.build.outputs.name}}
         version   : ${{steps.changelog.outputs.version}}
         changelog : ${{steps.changelog.outputs.release-notes}}
-        github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         github-commitish: ${{github.ref_name}}
+        github-tag      : ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         modrinth-token  : ${{secrets.MODRINTH_TOKEN}}

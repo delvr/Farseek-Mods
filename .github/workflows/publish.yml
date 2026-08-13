@@ -25,7 +25,7 @@ on:
         default :  ''
 run-name: Publish ${{inputs.mod-id}} ${{inputs.release-type}} ${{inputs.prerelease-id}}
 jobs:
-  publish: # name expected in build.gradle
+  publish:
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
     environment: releases
     permissions:
@@ -56,22 +56,24 @@ jobs:
       uses: ./.github/actions/setup-build
     # Build mod using new version
     - name: Build ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
-      run : ./gradlew build -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
+      id  : build
+      run : ./gradlew buildToPublish -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
     # https://github.com/stefanzweifel/git-auto-commit-action
-    - name: Commit changes and push with release tag
+    - name: Commit changes with release tag
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message : Prepare release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         tagging_message:         Release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         tag_name       :                 ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
     # https://github.com/Kira-NT/mc-publish
-    - name: Publish mod
+    - name: Publish ${{steps.build.outputs.name}}
       uses: Kira-NT/mc-publish@v3
       with:
+        name      : ${{steps.build.outputs.name}}
         version   : ${{steps.changelog.outputs.version}}
         changelog : ${{steps.changelog.outputs.release-notes}}
-        github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         github-commitish: ${{github.ref_name}}
+        github-tag      : ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}
         modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
         github-token    : ${{secrets.GITHUB_TOKEN}}

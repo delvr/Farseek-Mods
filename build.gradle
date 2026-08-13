@@ -13,7 +13,8 @@ import static farseek.utils.Constants.*
 import static groovy.json.JsonOutput.*
 import static java.util.concurrent.TimeUnit.*
 
-boolean publishing = System.getenv("GITHUB_JOB") == "publish"
+String publishTaskName = "buildToPublish"
+boolean publishing = gradle.startParameter.taskNames.contains publishTaskName
 
 // -------------------------------------------------------------------------------------------------
 // Resources configuration
@@ -46,6 +47,8 @@ Map<String, LocalMod> modsToBuild = localMods.filterByValue { !it.skipBuild }
 List<LocalMod> appMods = modsToBuild.values().toList() - modsToBuild.farseek
 List<LocalMod> mods = (modsToBuild.farseek? [modsToBuild.farseek]: []) + appMods
 
+if(publishing && mods.size() != 1) error("Must build 1 mod when publishing, found $mods")
+LocalMod modToPublish = publishing? mods.first: null
 // -------------------------------------------------------------------------------------------------
 // Minecraft compilation
 // -------------------------------------------------------------------------------------------------
@@ -198,9 +201,12 @@ tasks.configureEach { task ->
 // -------------------------------------------------------------------------------------------------
 // GitHub CI
 // -------------------------------------------------------------------------------------------------
+// Should be $GITHUB_OUTPUT in GitHub Actions
+File ciOutputFile = file(configs.outputFile ?: "build/ciOutput.txt")
+
 // https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/run-job-variations
 tasks.register("testingMatrix", WriteTextFile) { group = "ci"
-    outputFile = file(configs.outputFile ?: "build/testingMatrix.out")
+    outputFile = ciOutputFile
     text = "args=" + toJson([""] + modDependencies.collectMany { name, dep ->
         def arg = { k, v -> "-Ddependencies.${name}.$k=$v" }
         String versionArg = arg("version", dep.minVersion)
@@ -208,6 +214,14 @@ tasks.register("testingMatrix", WriteTextFile) { group = "ci"
         (dep.hasVersionRange? [versionArg]: []) +
         (dep.type == compatible? [reqTypeArg, dep.hasVersionRange? "$reqTypeArg $versionArg": []]: [])
 } ) }
+
+tasks.register(publishTaskName, WriteTextFile) { group = "ci"
+    dependsOn tasks.build
+    outputFile = ciOutputFile
+    Dependency mainDep = modToPublish.dependencies.first
+    text = "name=$modToPublish.displayName $modToPublish.version"+
+                " for $mainDep.displayName $mainDep.minVersion+"
+}
 
 // -------------------------------------------------------------------------------------------------
 // IntelliJ IDEA
@@ -228,16 +242,13 @@ if(System.getProperty("idea.active")) {
 // -------------------------------------------------------------------------------------------------
 // Utility functions
 // -------------------------------------------------------------------------------------------------
-
 String versionFromRange(Dependency dep) {
     Configuration config = configurations.create dep.name
     config.resolutionStrategy { cacheDynamicVersionsFor 0, SECONDS }
     dependencies.add(config.name, dep.coordinatesWithRange)
-    var resolvedArtifact = config.incoming.resolutionResult.allComponents*.id.find {
+    config.incoming.resolutionResult.allComponents*.id.find {
         it.toString().startsWith(dep.moduleId)
-    }
-    if(resolvedArtifact) resolvedArtifact.version
-    else throw new RuntimeException("Cannot resolve $dep")
+    }?.version ?: error("Cannot resolve $dep")
 }
 
 void extend(SourceSet child, SourceSet parent) {
@@ -247,3 +258,5 @@ void extend(SourceSet child, SourceSet parent) {
         configurations[parent.runtimeClasspathConfigurationName])
     dependencies.add(child.implementationConfigurationName, parent.output)
 }
+
+def error(String msg) { throw new RuntimeException(msg) }
