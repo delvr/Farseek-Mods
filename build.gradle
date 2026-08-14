@@ -46,14 +46,16 @@ Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
 Map<String, LocalMod> modsToBuild = localMods.filterByValue { !it.skipBuild }
 List<LocalMod> appMods = modsToBuild.values().toList() - modsToBuild.farseek
 List<LocalMod> mods = (modsToBuild.farseek? [modsToBuild.farseek]: []) + appMods
-
+// Published mod
 if(publishing && mods.size() != 1) error("Must build 1 mod when publishing, found $mods")
 LocalMod modToPublish = publishing? mods.first: null
+
 // -------------------------------------------------------------------------------------------------
 // Minecraft compilation
 // -------------------------------------------------------------------------------------------------
+Dependency neoforge = modDependencies.neoforge
 neoForge {
-    version = modDependencies.neoforge.version
+    version = neoforge.version
     // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#access-transformers
     // https://docs.neoforged.net/docs/advanced/accesstransformers
     mods.forEach { accessTransformers.from fileTree(it.resourcesDir / metaDirName / "accesstransformer.cfg") }
@@ -75,7 +77,7 @@ mods.forEach { LocalMod mod ->
     extend(mod.test, mod.main)
     mod.dependencies(required).forEach { dep ->
         // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#isolated-source-sets
-        if(dep == modDependencies.neoforge && mod.main != sourceSets.main)
+        if(dep == neoforge && mod.main != sourceSets.main)
             neoForge.addModdingDependenciesTo(mod.main)
         else if(dep.isLocal)
             extend(mod.main, modsToBuild[dep.name].main)
@@ -159,7 +161,7 @@ mods.forEach { LocalMod mod ->
             // https://docs.neoforged.net/docs/gettingstarted/versioning#semantic-versioning
             archiveVersion = mod.version
             // https://docs.neoforged.net/docs/gettingstarted/versioning#including-the-mod-loader
-            archiveClassifier = "for-$modDependencies.neoforge.name" + (dev? "-$mod.devClassifier": "")
+            archiveClassifier = neoforge.name + (dev? "-$mod.devClassifier": "")
         }
     }
     tasks.jar.dependsOn jarTask(false)
@@ -218,9 +220,8 @@ tasks.register("testingMatrix", WriteTextFile) { group = "ci"
 tasks.register(publishTaskName, WriteTextFile) { group = "ci"
     dependsOn tasks.build
     outputFile = ciOutputFile
-    Dependency mainDep = modToPublish.dependencies.first
     text = "name=$modToPublish.displayName $modToPublish.version"+
-                " for $mainDep.displayName $mainDep.minVersion+"
+               " for $neoforge.displayName $neoforge.minVersion+"
 }
 
 // -------------------------------------------------------------------------------------------------
