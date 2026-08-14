@@ -38,9 +38,9 @@ jobs:
     - name: Publish mod
       uses: Kira-NT/mc-publish@v3
       with:
-        name      : ${{steps.build.outputs.name}}
-        version   : ${{steps.changelog.outputs.version}}
-        changelog : ${{steps.changelog.outputs.release-notes}}
         github-commitish: ${{github.ref_name}}
         github-tag      : ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        version         : ${{steps.changelog.outputs.version}}
+        changelog       : ${{steps.changelog.outputs.release-notes}}
+        github-name     : ${{steps.build.outputs.name}}
         github-token    : ${{secrets.GITHUB_TOKEN}}

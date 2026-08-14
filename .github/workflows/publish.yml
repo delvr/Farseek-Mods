@@ -69,11 +69,14 @@ jobs:
     - name: Publish ${{steps.build.outputs.name}}
       uses: Kira-NT/mc-publish@v3
       with:
-        name      : ${{steps.build.outputs.name}}
-        version   : ${{steps.changelog.outputs.version}}
-        changelog : ${{steps.changelog.outputs.release-notes}}
         github-commitish: ${{github.ref_name}}
         github-tag      : ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        version         : ${{steps.changelog.outputs.version}}
+        changelog       : ${{steps.changelog.outputs.release-notes}}
+        # generic "name" arg doesn't propagate cleanly to CurseForge
+        curseforge-name : ${{steps.build.outputs.name}}
+        modrinth-name   : ${{steps.build.outputs.name}}
+        github-name     : ${{steps.build.outputs.name}}
         curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}
         modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
         github-token    : ${{secrets.GITHUB_TOKEN}}
