@@ -33,14 +33,14 @@ jobs:
     # Build mod using new version
     - name: Build ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
       id  : build
-      run : ./gradlew buildToPublish -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
+      run : >
+        ./gradlew buildToPublish -DoutputFile=$GITHUB_OUTPUT
+                 -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
     # https://github.com/Kira-NT/mc-publish
-    - name: Publish mod
+    - name: Publish ${{steps.build.outputs.name}}
       uses: Kira-NT/mc-publish@v3
       with:
-        github-commitish: ${{github.ref_name}}
-        github-tag      : ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
-        version         : ${{steps.changelog.outputs.version}}
-        changelog       : ${{steps.changelog.outputs.release-notes}}
-        modrinth-name   : ${{steps.build.outputs.name}}
-        modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
+        name          : ${{steps.build.outputs.name}}
+        version       : ${{steps.changelog.outputs.version}}
+        changelog     : ${{steps.changelog.outputs.release-notes}}
+        modrinth-token: ${{secrets.MODRINTH_TOKEN}}
