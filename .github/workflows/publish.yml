@@ -59,7 +59,7 @@ jobs:
       id  : build
       run : >
         ./gradlew buildToPublish -DoutputFile=$GITHUB_OUTPUT
-                 -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
+        -Dmods.${{inputs.mod-id}}.version=${{steps.changelog.outputs.version}}
     # https://github.com/stefanzweifel/git-auto-commit-action
     - name: Commit changes with release tag
       uses: stefanzweifel/git-auto-commit-action@v7
