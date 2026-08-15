@@ -26,10 +26,10 @@ jobs:
     environment: releases
     steps:
     # https://github.com/actions/checkout
-    - name: Checkout ${{inputs.mod-id}}-${{inputs.version}}
+    - name: Checkout repo #TODO ${{inputs.mod-id}}-${{inputs.version}}
       uses: actions/checkout@v7
-      with:
-        ref: ${{inputs.mod-id}}-${{inputs.version}}
+#      with:
+#        ref: ${{inputs.mod-id}}-${{inputs.version}}
     # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/query.md
     - name: Read ${{inputs.mod-id}} changelog for ${{inputs.version}}
       id  : changelog
@@ -41,7 +41,7 @@ jobs:
     # Setup build
     - name: Setup build
       uses: ./.github/actions/setup-build
-    # Build mod using new version
+    # Build mod using existing version
     - name: Build ${{inputs.mod-id}}-${{inputs.version}}
       id  : build
       run : >
