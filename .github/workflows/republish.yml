@@ -19,7 +19,7 @@ on:
         required: true
         type    : choice
         options : [github, curseforge, modrinth]
-run-name: Republish ${{inputs.mod-id}}-${{inputs.version}} to ${{inputs.platform}}
+run-name: Republish ${{inputs.mod-id}} ${{inputs.version}} to ${{inputs.platform}}
 jobs:
   republish:
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
@@ -31,12 +31,12 @@ jobs:
       with:
         ref: ${{inputs.mod-id}}-${{inputs.version}}
     # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/query.md
-    - name: Read changelog for ${{inputs.mod-id}}-${{inputs.version}}
+    - name: Read ${{inputs.mod-id}} changelog for ${{inputs.version}}
       id  : changelog
       uses: release-flow/keep-a-changelog-action@v3
       with:
-        command: query
-        version: ${{inputs.mod-id}}-${{inputs.version}}
+        command  : query
+        version  : ${{inputs.version}}
         changelog: changelogs/${{inputs.mod-id}}.md
     # Setup build
     - name: Setup build
