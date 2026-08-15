@@ -1,0 +1,59 @@
+name: Republish mod
+permissions:
+  contents: read
+on:
+  # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      mod-id:
+        description: Mod ID
+        required: true
+        type    : choice
+        options : [farseek, streams, repose]
+      version:
+        description: Version
+        required: true
+        type    : string
+      platform:
+        description: Platform
+        required: true
+        type    : choice
+        options : [github, curseforge, modrinth]
+run-name: Republish ${{inputs.mod-id}}-${{inputs.version}} to ${{inputs.platform}}
+jobs:
+  republish:
+    runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
+    environment: releases
+    steps:
+    # https://github.com/actions/checkout
+    - name: Checkout ${{inputs.mod-id}}-${{inputs.version}}
+      uses: actions/checkout@v7
+      ref : ${{inputs.mod-id}}-${{inputs.version}}
+    # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/query.md
+    - name: Read changelog for ${{inputs.mod-id}}-${{inputs.version}}
+      id  : changelog
+      uses: release-flow/keep-a-changelog-action@v3
+      with:
+        command: query
+        version: ${{inputs.mod-id}}-${{inputs.version}}
+        changelog: changelogs/${{inputs.mod-id}}.md
+    # Setup build
+    - name: Setup build
+      uses: ./.github/actions/setup-build
+    # Build mod using new version
+    - name: Build ${{inputs.mod-id}}-${{inputs.version}}
+      id  : build
+      run : >
+        ./gradlew buildToPublish -DoutputFile=$GITHUB_OUTPUT
+        -Dmods.${{inputs.mod-id}}.version=${{inputs.version}}
+    # https://github.com/Kira-NT/mc-publish
+    - name: Publish ${{steps.build.outputs.name}} to ${{inputs.platform}}
+      uses: Kira-NT/mc-publish@v3
+      with:
+        name      : ${{steps.build.outputs.name}}
+        version   : ${{inputs.version}}
+        changelog : ${{steps.changelog.outputs.release-notes}}
+        github-tag: ${{inputs.mod-id}}-${{inputs.version}}
+        github-token    : ${{case(inputs.platform == 'github'    , secrets.GITHUB_TOKEN    , null)}}
+        modrinth-token  : ${{case(inputs.platform == 'modrinth'  , secrets.MODRINTH_TOKEN  , null)}}
+        curseforge-token: ${{case(inputs.platform == 'curseforge', secrets.CURSEFORGE_TOKEN, null)}}

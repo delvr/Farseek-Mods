@@ -71,10 +71,10 @@ jobs:
     - name: Publish ${{steps.build.outputs.name}}
       uses: Kira-NT/mc-publish@v3
       with:
-        name            : ${{steps.build.outputs.name}}
-        version         : ${{steps.changelog.outputs.version}}
-        changelog       : ${{steps.changelog.outputs.release-notes}}
-        curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}
-        modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
+        name      : ${{steps.build.outputs.name}}
+        version   : ${{steps.changelog.outputs.version}}
+        changelog : ${{steps.changelog.outputs.release-notes}}
+        github-tag: ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         github-token    : ${{secrets.GITHUB_TOKEN}}
-        github-tag      : ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        modrinth-token  : ${{secrets.MODRINTH_TOKEN}}
+        curseforge-token: ${{secrets.CURSEFORGE_TOKEN}}
