@@ -24,6 +24,8 @@ jobs:
   republish:
     runs-on: ubuntu-latest # git-auto-commit-action requires a Unix system
     environment: releases
+    permissions:
+      contents: write
     steps:
     # https://github.com/actions/checkout
     - name: Checkout repo #TODO ${{inputs.mod-id}}-${{inputs.version}}
