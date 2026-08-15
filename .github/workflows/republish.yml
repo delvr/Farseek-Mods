@@ -28,7 +28,8 @@ jobs:
     # https://github.com/actions/checkout
     - name: Checkout ${{inputs.mod-id}}-${{inputs.version}}
       uses: actions/checkout@v7
-      ref : ${{inputs.mod-id}}-${{inputs.version}}
+      with:
+        ref: ${{inputs.mod-id}}-${{inputs.version}}
     # https://github.com/release-flow/keep-a-changelog-action/blob/main/docs/query.md
     - name: Read changelog for ${{inputs.mod-id}}-${{inputs.version}}
       id  : changelog
