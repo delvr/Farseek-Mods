@@ -10,5 +10,5 @@ Features include:
 
 #### General APIs
 - Numeric [refinement types](https://en.wikipedia.org/wiki/Refinement_type) for interval-bound numbers and geometric measures
-- Math functions for interpolation, Bezier curves, sets, graphs and more
+- Math functions for interpolation, Bézier curves, sets, graphs and more
 - Scala utilities for collections, conversions, validations etc.

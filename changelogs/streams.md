@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- Updated Farseek dependency.
+- Update Farseek dependency.
+- Refactor build logic.
+
 ### Removed
 - Different animated textures for different flow speeds, which are not possible in Minecraft 26+ without extensive duplication of core render methods. Various flow speeds still exist (slower on river edges and faster in the middle), but are not visually differentiated. 
 

@@ -222,7 +222,7 @@ tasks.register("testingMatrix", WriteTextFile) { group = "ci"
         def arg = { k, v -> "-Ddependencies.${name}.$k=$v" }
         String versionArg = arg("version", dep.minVersion)
         String reqTypeArg = arg("type", Dependency.Type.required)
-        (dep.hasVersionRange? [versionArg]: []) +
+        (dep.hasVersionRange || configs.mods[dep.name]? [versionArg]: []) +
         (dep.type == compatible? [reqTypeArg, dep.hasVersionRange? "$reqTypeArg $versionArg": []]: [])
 } ) }
 
