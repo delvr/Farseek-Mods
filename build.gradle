@@ -7,7 +7,8 @@ plugins {
 import com.typesafe.config.*
 import farseek.resources.*
 import farseek.tasks.*
-import net.neoforged.moddevgradle.tasks.*
+import groovy.xml.*
+import org.semver4j.*
 import static farseek.resources.Dependency.Type.*
 import static farseek.utils.Constants.*
 import static groovy.json.JsonOutput.*
@@ -26,11 +27,21 @@ Map configs = ConfigFactory.load().root().unwrapped()
 // Badges
 Map<String, Map<String, String>> badges = configs.badges
 // Project
-Resource repository = new Resource(configs.project, badges)
+Resource projectResource = new Resource(configs.project, badges)
 // Mod authors
 Map<String, Resource> authors = configs.authors.withNames { new Resource(it, badges) }
+
 // Mod-hosting platforms
 Map<String, Platform> platforms = configs.platforms.withNames { new Platform(it, badges) }
+repositories { platforms.values().forEach { Platform platform ->
+    if(platform.mavenUri) add(maven {
+        name = platform.displayName
+        url  = platform.mavenUri
+        // https://docs.gradle.org/current/userguide/filtering_repository_content.html#sec:declaring-repository-filter
+        if(platform.mavenGroup) content { includeGroup platform.mavenGroup }
+    } )
+} }
+
 // Mod dependencies
 Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map props ->
     Dependency tmpDep = new Dependency(props, badges, platforms)
@@ -38,6 +49,7 @@ Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map p
     String version = props.version ?: (isMod && !publishing? null: versionFromRange(tmpDep))
     new Dependency(props + [version: version], badges, platforms)
 }
+
 // Local mods
 Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
     boolean skipBuild = props.skipBuild ?: publishing && !props.version
@@ -65,19 +77,11 @@ neoForge {
 // -------------------------------------------------------------------------------------------------
 // Mod Dependencies
 // -------------------------------------------------------------------------------------------------
-repositories { platforms.values().forEach { Platform platform -> add(maven {
-    url = platform.mavenUri
-    // https://docs.gradle.org/current/userguide/filtering_repository_content.html#sec:declaring-repository-filter
-    content { includeGroup platform.mavenGroup }
-} ) } }
-
 mods.forEach { LocalMod mod ->
-    String jarJarName = mod.taskName(tasks.jarJar)
-    JarJar.registerWithConfiguration(project, jarJarName)
     extend(mod.test, mod.main)
     mod.dependencies(required).forEach { dep ->
         // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#isolated-source-sets
-        if(dep == neoforge && mod.main != sourceSets.main)
+        if(dep == neoforge)
             neoForge.addModdingDependenciesTo(mod.main)
         else if(dep.isLocal)
             extend(mod.main, modsToBuild[dep.name].main)
@@ -93,7 +97,7 @@ mods.forEach { LocalMod mod ->
     mod.dependencies(embedded).forEach { dep ->
         if(dep != modDependencies.scala) // handled by Scala plugin
             dependencies.add(mod.main.implementationConfigurationName, dep.devCoordinates)
-        dependencies.add(jarJarName, dep.moduleId) {
+        dependencies.add(mod.jarJarName, dep.moduleId) {
             version { strictly dep.versionRange; prefer dep.version }
     } }
 }
@@ -103,12 +107,16 @@ mods.forEach { LocalMod mod ->
 // -------------------------------------------------------------------------------------------------
 // https://docs.gradle.org/current/userguide/scala_plugin.html#sec:scala_version
 scala.scalaVersion = modDependencies.scala.version
-/** <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.scala.ScalaCompile.html">Scala compilation tasks</a> */
-tasks.withType(ScalaCompile).configureEach {
-    scalaCompileOptions.additionalParameters = (
-        compilerOptions.asCsvSeq() +
-        languageFeatures.asCsvSeq().collect { "language:experimental.$it" }
-    ).collect { "-$it".toString() } // toString() avoids a casting bug in plugin
+List<String> compileOptions = (
+    compilerOptions.asCsvSeq() +
+    languageFeatures.asCsvSeq().collect { "language:experimental.$it" }
+).collect { "-$it".toString() } // toString() avoids a casting bug in plugin
+mods.forEach { LocalMod mod ->
+    /** <a href="https://docs.gradle.org/current/dsl/org.gradle.api.tasks.scala.ScalaCompile.html">Scala compilation tasks</a> */
+    tasks[mod.main.getCompileTaskName("scala")].configure {
+        tasks.compileScala.dependsOn delegate
+        scalaCompileOptions.additionalParameters = compileOptions
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -116,16 +124,16 @@ tasks.withType(ScalaCompile).configureEach {
 // -------------------------------------------------------------------------------------------------
 mods.forEach { LocalMod mod ->
     File generatedResourcesDir = buildDir / "generated/resources/$mod.name"
-    TaskProvider generateMetadata = tasks.register(mod.prefixed("metadata"), WriteTextFile) {
+    TaskProvider metadataTask = tasks.register(mod.main.getTaskName("write", "metadata"), WriteTextFile) {
         // https://docs.neoforged.net/docs/gettingstarted/modfiles#neoforgemodstoml
         outputFile = generatedResourcesDir / metaDirName / "neoforge.mods.toml"
         text = mod.metadata(neoForge.minecraftVersion).joinLines()
         outputs.upToDateWhen { false } // always re-generate
     }
     mod.main.resources.srcDir generatedResourcesDir
-    tasks[mod.main.processResourcesTaskName].dependsOn generateMetadata
+    tasks[mod.main.processResourcesTaskName].dependsOn metadataTask
     // https://docs.neoforged.net/toolchain/docs/plugins/mdg/#running-tasks-on-ide-project-synchronization
-    neoForge.ideSyncTask generateMetadata
+    neoForge.ideSyncTask metadataTask
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -136,7 +144,8 @@ mods.forEach { LocalMod mod -> neoForge.mods.create(mod.name) { sourceSet mod.ma
 /** Set up <a href="https://docs.neoforged.net/toolchain/docs/plugins/mdg/#runs">NeoForge runs</a> */
 appMods.forEach { LocalMod mod -> ["client", "server"].forEach { runType ->
     ([null] + mod.dependencies(compatible)).forEach { otherMod ->
-        String runName = [mod.name, runType, otherMod? "with-$otherMod": ""].joinDashed()
+        String runName = mod.main.getTaskName("run", runType) +
+                         (otherMod? "With${otherMod.pascalCaseName}": "")
         var modsToLoad = neoForge.mods.named { name ->
             name == mod.name || otherMod?.name == name ||
               mod.dependencies(required).any { it.name == name }
@@ -154,10 +163,10 @@ appMods.forEach { LocalMod mod -> ["client", "server"].forEach { runType ->
 tasks.jar.enabled = false // our jar tasks are mod-specific
 mods.forEach { LocalMod mod ->
     def jarTask = { boolean dev ->
-        tasks.register(mod.taskName(tasks.jar) + (dev? "Dev": ""), Jar) {
-            from(mod.main.output, tasks[mod.taskName(tasks.jarJar)])
+        tasks.register(mod.main.jarTaskName + (dev? "Dev": ""), Jar) {
+            from mod.main.output, tasks[mod.jarJarName]
             if(dev) from mod.main.allSource.srcDirs.named("scala")
-            archiveBaseName = mod.name // not mavenName, that's the project ID on default platform
+            archiveBaseName = mod.mavenName
             // https://docs.neoforged.net/docs/gettingstarted/versioning#semantic-versioning
             archiveVersion = mod.version
             // https://docs.neoforged.net/docs/gettingstarted/versioning#including-the-mod-loader
@@ -172,9 +181,9 @@ mods.forEach { LocalMod mod ->
 // Documentation
 // -------------------------------------------------------------------------------------------------
 List<String> readmeParagraphs = [
-    "# $repository.displayName",
+    "# $projectResource.displayName",
     "<!-- This file is automatically generated by Gradle configuration; do not edit manually. -->",
-    repository.badgesMarkdown, repository.description] +
+    projectResource.badgesMarkdown, projectResource.description] +
     ["## Mods" ] + localMods.values().collectMany { it.markdownParagraphs } +
     ["## Authors"] + authors.values().collectMany { it.markdownParagraphs }
 
@@ -247,9 +256,26 @@ String versionFromRange(Dependency dep) {
     Configuration config = configurations.create dep.name
     config.resolutionStrategy { cacheDynamicVersionsFor 0, SECONDS }
     dependencies.add(config.name, dep.coordinatesWithRange)
-    config.incoming.resolutionResult.allComponents*.id.find {
-        it.toString().startsWith(dep.moduleId)
-    }?.version ?: error("Cannot resolve $dep")
+    var resolvedIds = config.incoming.resolutionResult.allComponents*.id
+    var resolvedId = resolvedIds.find { it.toString().startsWith(dep.moduleId) }
+    String version = resolvedId?.version ?: versionFromRangeOnPlatform(dep)
+    println "$dep.coordinatesWithRange: found $version"
+    version
+}
+
+// Fallback to metadata for platforms not understood by Gradle range resolution (e.g. Modrinth)
+String versionFromRangeOnPlatform(Dependency dep) {
+    if(!dep.hostPlatform) error("$dep.coordinatesWithRange: no suitable version found in " +
+                                "${repositories*.name} or their transitive repositories")
+    URI metadataUri =
+        dep.hostPlatform.groupPath / dep.platformIds[dep.hostPlatform] / "maven-metadata.xml"
+    Node metadata = new XmlParser().parse(metadataUri.toString())
+    List<String> rawVersions = metadata.versioning.versions.version*.text()
+    Map<Semver, String> versions = rawVersions.keyedWith { Semver.coerce(it) }
+    Semver min = Semver.coerce(dep.minVersion)
+    Semver max = Semver.coerce(dep.maxVersion)
+    String version = versions[versions.keySet().findAll { min <= it && it <= max }.max()]
+    version ?: error("$dep.coordinatesWithRange: no suitable version found in $metadataUri")
 }
 
 void extend(SourceSet child, SourceSet parent) {

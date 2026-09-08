@@ -8,22 +8,21 @@ class Artifact extends Resource {
 
     final String mavenGroup, mavenName, version, devClassifier
     final Map<Platform, String> platformIds
+    final Platform hostPlatform
 
     Artifact(Map<String, String> props, Map<String, Map<String, String>> badgeProps,
              Map<String, Platform> platforms) {
         super(props + [badges: (props.badges?:[]) +
-            (props.platformIds?:[:]).collect { k, v -> "$k:$v" }], badgeProps)
-        platformIds   =(props.platformIds ?: [:]).mapKeys { platforms[it] }
-        mavenGroup    = props.mavenGroup  ?: defaultPlatform.mavenGroup
-        mavenName     = props.mavenName   ?: idForDefaultPlatform
-        version       = props.version     ?: LocalVersion
+                      (props.platformIds?:[:]).collect { k, v -> "$k:$v" }], badgeProps)
+        platformIds   = (props.platformIds ?: [:]).mapKeys { platforms[it] }
+        hostPlatform  = platforms[props.hostPlatform]
+        mavenGroup    = hostPlatform?.mavenGroup ?: props.mavenGroup
+        mavenName     = hostPlatform? platformIds[hostPlatform]: props.mavenName ?: name
+        version       = props.version ?: LocalVersion
         devClassifier = props.devClassifier
     }
 
     final boolean getIsLocal() { version == LocalVersion }
-
-    final Platform    getDefaultPlatform() { platformIds.keySet().findResult() }
-    final String getIdForDefaultPlatform() { platformIds[defaultPlatform] }
 
     final String getModuleId() { "$mavenGroup:$mavenName" }
     final String getCoordinates() { "$moduleId:$version" }

@@ -9,8 +9,10 @@ class Platform extends Resource {
 
     Platform(Map<String, String> props, Map<String, Map<String, String>> badgeProps) {
         super(props, badgeProps)
-        mavenUri    = props.mavenUri.asUri()
+        mavenUri    = props.mavenUri?.asUri()
         mavenGroup  = props.mavenGroup
         mcPublishId = props.mcPublishId ?: name
     }
+
+    URI getGroupPath() { mavenUri / mavenGroup?.replace(".", "/") }
 }

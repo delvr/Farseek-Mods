@@ -26,20 +26,17 @@ class LocalMod extends Artifact {
         authors      = props.authors
         skipBuild    = props.skipBuild ?: false
         dependencies = props.dependencies.collect { modDependencies[it] }
-        def sourceSet = {
-            name == "farseek"? it: sourceSets.create("$it.name$pascalCaseName") { scala }
-        }
+        def sourceSet = { sourceSets.create("$name${it.name.capitalize()}") { scala } }
         main = sourceSet(sourceSets.main)
         test = sourceSet(sourceSets.test)
         sourceRoot = main.allSource.srcDirs.first().parentFile
         outputRoot = main.output.first()
     }
 
-    String prefixed(String prefix) { prefix + pascalCaseName }
-    String taskName(Task base) { prefixed(base.name) }
-
     File getReadmeFile()   { sourceRoot / "README.md" }
     File getResourcesDir() { sourceRoot / "resources" }
+
+    String getJarJarName() { main.getTaskName(null, "jarJar") }
 
     List<Dependency> dependencies(Dependency.Type type) { dependencies.findAll { it.type == type } }
 

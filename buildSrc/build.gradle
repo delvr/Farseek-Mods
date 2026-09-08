@@ -3,8 +3,10 @@
 // https://docs.gradle.org/current/userguide/filtering_repository_content.html#maven_repository_filtering
 repositories { mavenCentral() { mavenContent { releasesOnly() } } }
 
-// https://github.com/lightbend/config
-dependencies { implementation "com.typesafe:config:latest.release" }
+dependencies {
+    implementation   "com.typesafe:config:latest.release" // https://github.com/lightbend/config
+    implementation "org.semver4j:semver4j:latest.release" // https://github.com/semver4j/semver4j
+}
 
 // https://docs.groovy-lang.org/next/html/documentation/core-metaprogramming.html#metaprogramming_emc
 // https://docs.groovy-lang.org/latest/html/api/groovy/lang/ExpandoMetaClass.html
