@@ -64,7 +64,7 @@ jobs:
     - name: Commit changes with release tag
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
-        commit_message : Prepare release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
+        commit_message : Prepare release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}} [skip ci]
         tagging_message:         Release ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
         tag_name       :                 ${{inputs.mod-id}}-${{steps.changelog.outputs.version}}
     # https://github.com/Kira-NT/mc-publish

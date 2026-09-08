@@ -56,6 +56,7 @@ Iterable.metaClass {
     mappedTo       << { f -> delegate.collectEntries { [it, f(it)] } }
     byName         << { f = {it} -> delegate.collect(f).keyedWith { it.name } }
     named          << { n -> delegate.find { it.name == n } }
+    asMapEntries   << { s = ":" -> delegate.collectEntries { it.splitOnFirst(s) } }
 }
 Map.metaClass {
     required  << { k    -> delegate.containsKey(k)? delegate[k]: delegate.missingPart("key", k) }

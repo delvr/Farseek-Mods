@@ -6,25 +6,23 @@ import groovy.transform.*
 class Artifact extends Resource {
     final static String LocalVersion = "0+LOCAL"
 
-    final String mavenGroup, mavenName, version, devClassifier
+    final String mavenGroup, mavenName, version, classifier
     final Map<Platform, String> platformIds
     final Platform hostPlatform
 
     Artifact(Map<String, String> props, Map<String, Map<String, String>> badgeProps,
              Map<String, Platform> platforms) {
-        super(props + [badges: (props.badges?:[]) +
-                      (props.platformIds?:[:]).collect { k, v -> "$k:$v" }], badgeProps)
-        platformIds   = (props.platformIds ?: [:]).mapKeys { platforms[it] }
-        hostPlatform  = platforms[props.hostPlatform]
-        mavenGroup    = hostPlatform?.mavenGroup ?: props.mavenGroup
-        mavenName     = hostPlatform? platformIds[hostPlatform]: props.mavenName ?: name
-        version       = props.version ?: LocalVersion
-        devClassifier = props.devClassifier
+        super(props + [badges: (props.badges?:[]) + (props.platformIds?:[])], badgeProps)
+        platformIds  = (props.platformIds?:[]).asMapEntries().mapKeys { platforms[it] }
+        hostPlatform = platforms[props.hostPlatform]
+        mavenGroup   = hostPlatform?.mavenGroup ?: props.mavenGroup
+        mavenName    = hostPlatform? platformIds[hostPlatform]: props.mavenName ?: name
+        version      = props.version ?: LocalVersion
+        classifier   = props.classifier
     }
 
     final boolean getIsLocal() { version == LocalVersion }
 
-    final String getModuleId() { "$mavenGroup:$mavenName" }
-    final String getCoordinates() { "$moduleId:$version" }
-    final String getDevCoordinates() { [coordinates, devClassifier].joinNonEmpties(":") }
+    final String getModuleId()    { [mavenGroup, mavenName].joinWithColons() }
+    final String getCoordinates() { [moduleId, version, classifier].joinWithColons() }
 }

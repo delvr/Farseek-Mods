@@ -85,10 +85,10 @@ mods.forEach { LocalMod mod ->
             neoForge.addModdingDependenciesTo(mod.main)
         else if(dep.isLocal)
             extend(mod.main, modsToBuild[dep.name].main)
-        else dependencies.add(mod.main.implementationConfigurationName, dep.devCoordinates)
+        else dependencies.add(mod.main.implementationConfigurationName, dep.coordinates)
     }
     mod.dependencies(compatible).forEach { dep ->
-        dependencies.add(mod.main.compileOnlyConfigurationName, dep.devCoordinates)
+        dependencies.add(mod.main.compileOnlyConfigurationName, dep.coordinates)
     }
     mod.dependencies(incompatible).forEach { dep ->
         dependencies.add(mod.main.implementationConfigurationName, dep.moduleId) {
@@ -96,7 +96,7 @@ mods.forEach { LocalMod mod ->
     } }
     mod.dependencies(embedded).forEach { dep ->
         if(dep != modDependencies.scala) // handled by Scala plugin
-            dependencies.add(mod.main.implementationConfigurationName, dep.devCoordinates)
+            dependencies.add(mod.main.implementationConfigurationName, dep.coordinates)
         dependencies.add(mod.jarJarName, dep.moduleId) {
             version { strictly dep.versionRange; prefer dep.version }
     } }
@@ -160,21 +160,21 @@ appMods.forEach { LocalMod mod -> ["client", "server"].forEach { runType ->
 // -------------------------------------------------------------------------------------------------
 // Assembly
 // -------------------------------------------------------------------------------------------------
-tasks.jar.enabled = false // our jar tasks are mod-specific
+java { withSourcesJar() }
+tasks.jar.enabled = false
+tasks.sourcesJar.enabled = false
 mods.forEach { LocalMod mod ->
-    def jarTask = { boolean dev ->
-        tasks.register(mod.main.jarTaskName + (dev? "Dev": ""), Jar) {
-            from mod.main.output, tasks[mod.jarJarName]
-            if(dev) from mod.main.allSource.srcDirs.named("scala")
-            archiveBaseName = mod.mavenName
-            // https://docs.neoforged.net/docs/gettingstarted/versioning#semantic-versioning
-            archiveVersion = mod.version
-            // https://docs.neoforged.net/docs/gettingstarted/versioning#including-the-mod-loader
-            archiveClassifier = neoforge.name + (dev? "-$mod.devClassifier": "")
-        }
+    tasks.jar.dependsOn tasks.register(mod.main.jarTaskName, Jar) {
+        from mod.main.output, tasks[mod.jarJarName]
+        archiveBaseName = mod.mavenName
+        archiveVersion  = mod.version
     }
-    tasks.jar.dependsOn jarTask(false)
-    if(mod.devClassifier) tasks.jar.dependsOn jarTask(true)
+    tasks.sourcesJar.dependsOn tasks.register(mod.main.sourcesJarTaskName, Jar) {
+        from mod.main.allSource.srcDirs.named("scala")
+        archiveBaseName   = mod.mavenName
+        archiveVersion    = mod.version
+        archiveClassifier = tasks.sourcesJar.archiveClassifier
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -226,10 +226,10 @@ tasks.register("testingMatrix", WriteTextFile) { group = "ci"
         (dep.type == compatible? [reqTypeArg, dep.hasVersionRange? "$reqTypeArg $versionArg": []]: [])
 } ) }
 
-tasks.register(publishTaskName, WriteTextFile) { group = "ci"
+if(publishing) tasks.register(publishTaskName, WriteTextFile) { group = "ci"
     dependsOn tasks.build
     outputFile = ciOutputFile
-    text = "name=$modToPublish.displayName $modToPublish.version"+
+    text = "name=$modToPublish.displayName $modToPublish.version" +
                " for $neoforge.displayName $neoforge.minVersion+"
 }
 
