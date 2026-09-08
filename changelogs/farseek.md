@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0-beta.1] - 2026-09-08
+
 ### Changed
 
 - Update Scala dependency.
@@ -37,7 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release.
 
-[Unreleased]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-beta.0...HEAD
+[Unreleased]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-beta.1...HEAD
+
+[3.0.0-beta.1]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-beta.0...farseek-3.0.0-beta.1
 
 [3.0.0-beta.0]: https://github.com/delvr/Farseek-Mods/compare/farseek-3.0.0-alpha.2...farseek-3.0.0-beta.0
 
