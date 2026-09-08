@@ -15,7 +15,7 @@ class Resource implements Named, Describable {
     final Map<URI, URI> badges
 
     Resource(Map<String, String> props, Map<String, Map<String, String>> badgeProps) {
-        name        = validated(props.name)
+        name        = props.name.validated("resource name") { it =~ nameRegex }
         displayName = props.displayName ?: capitalizedName
         description = props.description
         homepage    = props.homepage?.asUri()
@@ -25,8 +25,6 @@ class Resource implements Named, Describable {
             [badgeLink(badgeProps[name].badgeUri, id), badgeLink(badgeProps[name].homepage, id)]
         }
     }
-
-    protected final String validated(String name) { name.validate { it =~ nameRegex } }
 
     final String getCapitalizedName() { name.splitAndTrim("-")*.capitalize().joinWords() }
     final String getPascalCaseName()  { capitalizedName.replace(" ", "") }

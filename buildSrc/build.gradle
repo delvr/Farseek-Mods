@@ -13,7 +13,7 @@ dependencies {
 Object.metaClass {
     getClassName  << { delegate.class.simpleName }
     ifNonEmpty    << { f -> delegate? f(delegate): delegate }
-    validate      << { p = {it} -> p(delegate)? delegate: error("invalid $delegate") }
+    validated     << { desc, p = {it} ->   p(delegate)? delegate: error("invalid $desc $delegate") }
     validatePart  << { desc, part, p = {it} -> p(part)? delegate: delegate.invalidPart(desc, part) }
     validatedPart << { desc, part, p = {it} -> p(part)?     part: delegate.invalidPart(desc, part) }
     invalidPart   << { desc, part -> error("invalid $desc `$part` in $delegate") }
