@@ -2,7 +2,6 @@ package farseek.resources
 
 import farseek.utils.*
 import groovy.transform.*
-import org.gradle.api.*
 import org.gradle.api.tasks.*
 import static farseek.resources.Dependency.Type.*
 
@@ -11,21 +10,18 @@ class LocalMod extends Artifact {
     final String license
     final URI licensePage, issuesPage
     final List<String> authors
-    final List<Dependency> dependencies
     final SourceSet main, test
     final File sourceRoot, outputRoot
     final boolean skipBuild
 
     LocalMod(Map<String, String> props, Map<String, Map<String, String>> badgeProps,
-             Map<String, Platform> platforms, Map<String, Dependency> modDependencies,
-             SourceSetContainer sourceSets) {
+             Map<String, Platform> platforms, SourceSetContainer sourceSets) {
         super(props + [mavenName: props.mavenName ?: props.name], badgeProps, platforms)
         license      = props.license
         licensePage  = props.licensePage.asUri()
         issuesPage   = props.issuesPage.asUri()
         authors      = props.authors
         skipBuild    = props.skipBuild ?: false
-        dependencies = props.dependencies.collect { modDependencies[it] }
         def sourceSet = { sourceSets.create("$name${it.name.capitalize()}") { scala } }
         main = sourceSet(sourceSets.main)
         test = sourceSet(sourceSets.test)
@@ -37,8 +33,6 @@ class LocalMod extends Artifact {
     File getResourcesDir() { sourceRoot / "resources" }
 
     String getJarJarName() { main.getTaskName(null, "jarJar") }
-
-    List<Dependency> dependencies(Dependency.Type type) { dependencies.findAll { it.type == type } }
 
     /** <a href="https://docs.neoforged.net/docs/gettingstarted/modfiles#neoforgemodstoml">neoforge.mods.toml</a>*/
     // https://github.com/Kira-NT/mc-publish

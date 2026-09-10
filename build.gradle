@@ -49,12 +49,18 @@ Map<String, Dependency> modDependencies = configs.dependencies.withNames { Map p
     String version = props.version ?: (isMod && !publishing? null: versionFromRange(tmpDep))
     new Dependency(props + [version: version], badges, platforms)
 }
+configs.dependencies.forEach { String name, Map props ->
+    modDependencies[name].dependencies = props.dependencies.collect { modDependencies[it] }
+}
 
 // Local mods
 Map<String, LocalMod> localMods = configs.mods.withNames { Map props ->
     boolean skipBuild = props.skipBuild ?: publishing && !props.version
-    new LocalMod(props + [skipBuild: skipBuild], badges, platforms, modDependencies, sourceSets)
+    LocalMod mod = new LocalMod(props + [skipBuild: skipBuild], badges, platforms, sourceSets)
+    mod.dependencies = props.dependencies.collect { modDependencies[it] }
+    mod
 }
+localMods.values().forEach { it.dependencies.addAll it.transitiveDependencies(required) }
 Map<String, LocalMod> modsToBuild = localMods.filterByValue { !it.skipBuild }
 List<LocalMod> appMods = modsToBuild.values().toList() - modsToBuild.farseek
 List<LocalMod> mods = (modsToBuild.farseek? [modsToBuild.farseek]: []) + appMods
@@ -253,6 +259,7 @@ if(System.getProperty("idea.active")) {
 // Utility functions
 // -------------------------------------------------------------------------------------------------
 String versionFromRange(Dependency dep) {
+    if(!dep.hasVersionRange) return dep.minVersion
     Configuration config = configurations.create dep.name
     config.resolutionStrategy { cacheDynamicVersionsFor 0, SECONDS }
     dependencies.add(config.name, dep.coordinatesWithRange)
@@ -265,8 +272,9 @@ String versionFromRange(Dependency dep) {
 
 // Fallback to metadata for platforms not understood by Gradle range resolution (e.g. Modrinth)
 String versionFromRangeOnPlatform(Dependency dep) {
-    if(!dep.hostPlatform) error("$dep.coordinatesWithRange: no suitable version found in " +
-                                "${repositories*.name} or their transitive repositories")
+    if(!dep.hostPlatform || !dep.hostPlatform.mavenUri)
+        error("$dep.coordinatesWithRange: no suitable version found in " +
+              "${repositories*.name} or their transitive repositories")
     URI metadataUri =
         dep.hostPlatform.groupPath / dep.platformIds[dep.hostPlatform] / "maven-metadata.xml"
     Node metadata = new XmlParser().parse(metadataUri.toString())

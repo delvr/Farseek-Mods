@@ -14,5 +14,5 @@ class Platform extends Resource {
         mcPublishId = props.mcPublishId ?: name
     }
 
-    URI getGroupPath() { mavenUri / mavenGroup?.replace(".", "/") }
+    URI getGroupPath() { mavenUri? (mavenUri / mavenGroup?.replace(".", "/")): null }
 }
